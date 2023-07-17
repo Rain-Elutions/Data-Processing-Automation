@@ -4,8 +4,11 @@ from Data_Exploration.main import DataExploration
 if __name__ == '__main__':
     # ----------------- Test DataExploration -----------------
     data_exp = DataExploration()
-    data_exp.load_data('./data/coyote_data_sample.xlsx')
-    # data_exp.load_data('./data/lng_data_sample.csv')
+    # df = data_exp.load_data('./data/coyote_data_sample.xlsx')
+    # df = data_exp.load_data('./data/lng_data_sample.csv')
+    # df = data_exp.load_data('./data/sasol_data_sample.csv')
+    df = data_exp.load_data(1)
+
 
     
     print("Data size:", data_exp.get_data_size())
