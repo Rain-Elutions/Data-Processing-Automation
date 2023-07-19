@@ -8,7 +8,7 @@ class DataExploration:
     def __init__(self):
         self.data = None
     
-    def load_data(self, file_path, parse_dates=True, index_col=0) -> pd.DataFrame:
+    def load_data(self, file_path, parse_dates=True, index_col: int = 0) -> pd.DataFrame:
         """
         Load data into memory
         
@@ -20,47 +20,48 @@ class DataExploration:
         Returns:
         - self.data: the raw data
         """
+
         try:
             if file_path.endswith('.csv'):
                 self.data = pd.read_csv(file_path, parse_dates=parse_dates, index_col=index_col)
             elif file_path.endswith('.xlsx'):
                 self.data = pd.read_excel(file_path, parse_dates=parse_dates, index_col=index_col)
+            elif file_path.endswith('.pickle'):
+                self.data = pd.read_pickle(file_path)
+                self.data = self.data.set_index(self.data.columns[0])
+                if parse_dates:
+                    self.data.index = pd.to_datetime(self.data.index)
             return self.data
         except Exception as e:
             print("Error:", str(e))
     
     
-    def get_data_size(self, data: pd.DataFrame = None) -> tuple:
+    def get_data_size(self, data: pd.DataFrame = None):
         """
         Get the size of the data
 
         Parameters:
         - data: the input data
-        
-        Returns:
-        - self.data.shape: the size of the data
         """
+
         data = data if data is not None else self.data
-        return data.shape
+        print("Data size:", data.shape)
+        return
 
 
-    def get_data_type(self, data: pd.DataFrame = None, column_name=None) -> str:
+    def get_data_type(self, data: pd.DataFrame = None, column_name: str = None):
         """
         Return the data type for the specified column
 
         Parameters:
         - data: the input data
         - column_name: the name of the column
-        
-        Returns:
-        - the data type for the specified column
         """
-        try:
-            data = data if data is not None else self.data
-            return data.dtypes[column_name]
-        except Exception as e:
-            print("Invalid column name")
-            print("Error:", str(e))
+
+        data = data if data is not None else self.data
+        print("Data type of column", column_name, "is: ", data[column_name].dtype)
+        return
+
     
     def summarize_data_type(self, data: pd.DataFrame = None):
         """
@@ -68,27 +69,23 @@ class DataExploration:
 
         Parameters:
         - data: the input data
-        
-        Returns:
-        - the number of each data type
         """
 
         data = data if data is not None else self.data
-        # return self.data.dtypes
-        return data.dtypes.value_counts()
+        print("Data types summary:\n", data.dtypes.value_counts())
+        return
 
     
-    def summarize_missing_data(self, data: pd.DataFrame = None) -> pd.Series:
+    def summarize_missing_data(self, data: pd.DataFrame = None):
         """
         Summarize the number of missing data
 
         Parameters:
         - data: the input data
-
-        Returns:
-        - the number of missing data for columns with missing data
         """
 
         data = data if data is not None else self.data
         missing_data = data.isnull().sum()
-        return missing_data[missing_data > 0]
+        print("Missing data summary:")
+        print(missing_data[missing_data > 0])
+        return
