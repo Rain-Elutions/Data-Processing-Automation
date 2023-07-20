@@ -33,6 +33,9 @@ class EDA_Visualization:
                     xaxis_title="Columns",
                     yaxis_title="Missing Count",
                 )
+                fig.update_yaxes(
+                    rangemode = "tozero"
+                )
                 fig.show()
             return
         except Exception as e:
