@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np
 # import missingno as msno
 # from matplotlib import pyplot as plt
 
@@ -20,16 +21,19 @@ class DataExploration:
         Returns:
         - self.data: the raw data
         """
-
-        if file_path.endswith('.csv'):
-            self.data = pd.read_csv(file_path, parse_dates=parse_dates, index_col=index_col)
-        elif file_path.endswith('.xlsx'):
-            self.data = pd.read_excel(file_path, parse_dates=parse_dates, index_col=index_col)
-        elif file_path.endswith('.pickle'):
-            self.data = pd.read_pickle(file_path)
-            self.data = self.data.set_index(self.data.columns[0])
-            if parse_dates:
-                self.data.index = pd.to_datetime(self.data.index)
+        
+        try:
+            if file_path.endswith('.csv'):
+                self.data = pd.read_csv(file_path, parse_dates=parse_dates, index_col=index_col)
+            elif file_path.endswith('.xlsx'):
+                self.data = pd.read_excel(file_path, parse_dates=parse_dates, index_col=index_col)
+            elif file_path.endswith('.pickle'):
+                self.data = pd.read_pickle(file_path)
+                self.data = self.data.set_index(self.data.columns[0])
+                if parse_dates:
+                    self.data.index = pd.to_datetime(self.data.index)
+        except FileNotFoundError:
+            print("File not found")
 
         return self.data
     
@@ -86,6 +90,8 @@ class DataExploration:
         """
 
         data = data if data is not None else self.data
+        # convert "" to NaN
+        data = data.replace(r'^\s*$', np.nan, regex=True)
         missing_data = data.isnull().sum()
         print("Missing data summary:")
         print(missing_data[missing_data > 0])

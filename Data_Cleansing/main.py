@@ -20,14 +20,20 @@ class FillMissingByMode(FillMissingStrategy):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(data.mode().iloc[0])
 
+# Forward fill
 class FillMissingByLastKnownValue(FillMissingStrategy):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(method='ffill')
+
+# Backward fill
+class FillMissingByNextKnownValue(FillMissingStrategy):
+    def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
+        return data.fillna(method='bfill')
     
 class NotFill(FillMissingStrategy):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data
-    
+
 
 class DataCleansing:
     def __init__(self, data):
@@ -44,7 +50,12 @@ class DataCleansing:
         Returns:
         - data: the data after removing duplicates
         '''
+
+        # drop duplicate rows
         data = data.drop_duplicates()
+        # drop columns with same column names
+        data = data.loc[:, ~data.columns.duplicated()]
+
         return data
 
     
@@ -72,19 +83,6 @@ class DataCleansing:
 
         # fill missing values in the remaining columns
         data = fill_missing_strategy.fill_missing(data)
-        # if strategy == 'mean':
-        #     data = data.fillna(data.mean())
-        # elif strategy == 'median':
-        #     data = data.fillna(data.median())
-        # elif strategy == 'mode':
-        #     data = data.fillna(data.mode().iloc[0])
-        # # fill missing values with the last known non-null value
-        # elif strategy == 'ffill':
-        #     data = data.fillna(method='ffill')
-        # elif strategy == None:
-        #     pass
-        # else:
-        #     print("Invalid strategy for handling missing values.")
 
         return data
 
