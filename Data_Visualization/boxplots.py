@@ -68,9 +68,13 @@ class BoxPlots:
                         font=dict(size=12),
                         showarrow=False,
                         )
-
+                mean_value = np.mean(self.df1[self.col_name1])
+                if not np.isnan(np.mean(self.df1[self.col_name1])):
+                        text = "Mean: " + str(mean_value.round(2))
+                else:
+                        text = "Mean: N/A"
                 fig.add_annotation(x=0.4, y=np.min(self.df1[self.col_name1])-((abs(np.min(self.df1[self.col_name1]))*.15)+1), 
-                        text="Mean: " + str(np.mean(self.df1[self.col_name1]).round(2)),
+                        text=text,
                         font=dict(size=12),
                         showarrow=False,
                         )       
@@ -99,8 +103,13 @@ class BoxPlots:
                         font=dict(size=12),
                         showarrow=False,
                         )
+                mean_value = np.mean(self.df2[self.col_name1])
+                if not np.isnan(np.mean(self.df2[self.col_name1])):
+                        text = "Mean: " + str(mean_value.round(2))
+                else:
+                        text = "Mean: N/A"
                 fig.add_annotation(x=1.4, y=np.min(self.df2[self.col_name1])-((abs(np.min(self.df2[self.col_name1]))*.15)+1), 
-                        text="Mean: " + str(np.mean(self.df2[self.col_name1]).round(2)),
+                        text=text,
                         font=dict(size=12),
                         showarrow=False,
                         )
@@ -141,9 +150,13 @@ class BoxPlots:
                         showarrow=False,
                         row=1, col=2
                         )
-
+                mean_value = np.mean(self.df1[self.col_name2])
+                if not np.isnan(np.mean(self.df1[self.col_name2])):
+                        text = "Mean: " + str(mean_value.round(2))
+                else:
+                        text = "Mean: N/A"
                 fig.add_annotation(x=0.4, y=np.min(self.df1[self.col_name2])-((abs(np.min(self.df1[self.col_name2])*.15))+1), 
-                        text="Mean: " + str(np.mean(self.df1[self.col_name2]).round(2)),
+                        text=text,
                         font=dict(size=12),
                         showarrow=False,
                         row=1, col=2
@@ -175,8 +188,13 @@ class BoxPlots:
                         showarrow=False,
                         row=1, col=2
                         )
+                mean_value = np.mean(self.df2[self.col_name2])
+                if not np.isnan(np.mean(self.df2[self.col_name2])):
+                        text = "Mean: " + str(mean_value.round(2))
+                else:
+                        text = "Mean: N/A"
                 fig.add_annotation(x=1.4, y=np.min(self.df2[self.col_name2])-((abs(np.min(self.df2[self.col_name2]))*.15)+1), 
-                        text="Mean: " + str(np.mean(self.df2[self.col_name2]).round(2)),
+                        text=text,
                         font=dict(size=12),
                         showarrow=False,
                         row=1, col=2

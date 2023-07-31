@@ -1,11 +1,11 @@
 import pandas as pd
 
 class FeatureSelection:
-    def __init__(self, data):
+    def __init__(self, data,target_name):
         self.data = data
-        self.target_name = None
+        self.target_name = target_name
 
-    def correlation_selection(self, threshold: float=1.5):
+    def correlation_selection(self, threshold: float=.5):
         corr_matrix = self.data.corr()
         # get columns with correlation to target greater than threshold
         target_corr = corr_matrix[self.target_name]

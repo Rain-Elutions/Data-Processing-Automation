@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 class AnomalyDetection:
-        def __init__(self,data,target_name: str, problem = 'max', lower = 0, upper= 0,manual_input = None):
+        def __init__(self,data,target_name: str, problem:str, lower = 0, upper= 0,manual_input = None):
             self.df = data
             self.target_name = target_name
             self.problem = problem
@@ -14,15 +14,16 @@ class AnomalyDetection:
 
             quartiles = self.df[self.target_name].quantile([0.25, 0.75])
             iqr = quartiles[0.75] - quartiles[0.25]
+
             if self.problem == 'max':
                 lower = min(self.df[self.target_name])
                 upper = quartiles[0.75] + (1.5*iqr)
-            if self.problem == 'min':
+            elif self.problem == 'min':
                 lower = quartiles[0.25] - (1.5*iqr)
+                upper = max(self.df[self.target_name])
                 if lower < 0:
                     lower = 0 
-                upper = max(self.df[self.target_name])
-            if self.problem == 'range':
+            elif self.problem == 'range':
                 lower = quartiles[0.25] - (1.5*iqr)
                 if lower < 0:
                     lower = 0 
