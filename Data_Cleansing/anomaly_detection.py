@@ -11,16 +11,16 @@ class AnomalyDetection:
             self.manual_input = manual_input
 
         def get_bound(self):
-
+            print('Finding bounds...')
             quartiles = self.df[self.target_name].quantile([0.25, 0.75])
             iqr = quartiles[0.75] - quartiles[0.25]
 
             if self.problem == 'max':
+                lower = quartiles[0.25] - (1.5*iqr)
+                upper = max(self.df[self.target_name])   
+            elif self.problem == 'min':
                 lower = min(self.df[self.target_name])
                 upper = quartiles[0.75] + (1.5*iqr)
-            elif self.problem == 'min':
-                lower = quartiles[0.25] - (1.5*iqr)
-                upper = max(self.df[self.target_name])
                 if lower < 0:
                     lower = 0 
             elif self.problem == 'range':
@@ -31,6 +31,7 @@ class AnomalyDetection:
             else:
                 print('Invalid problem type')
 
+            print('Found Bounds!')
             return lower,upper
 
         def get_anomalies(self)->pd.DataFrame:
@@ -74,11 +75,11 @@ class AnomalyDetection:
             df = self.df.copy()
 
             if self.problem == 'max':
-                df['Anomaly'] = np.where(np.greater_equal(self.df[self.target_name],self.lower), 1, 0)
+                df['Anomaly'] = np.where(np.greater_equal(self.df[self.target_name],lower), 1, 0)
             elif self.problem  == 'min':
-                df['Anomaly'] = np.where(np.less_equal(self.df[self.target_name],self.upper), 1, 0)
+                df['Anomaly'] = np.where(np.less_equal(self.df[self.target_name],upper), 1, 0)
             elif self.problem  == 'both':
-                df['Anomaly'] = np.where(np.logical_and(np.greater_equal(self.df[self.target_name],self.lower),np.less_equal(df[self.target_name],self.upper)), 1, 0)
+                df['Anomaly'] = np.where(np.logical_and(np.greater_equal(self.df[self.target_name],lower),np.less_equal(df[self.target_name],upper)), 1, 0)
             else:
                 print('ERROR: choose another filter type')
 

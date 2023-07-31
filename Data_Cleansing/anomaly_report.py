@@ -4,7 +4,7 @@ from Data_Analyzing.correlation_report import *
 from Data_Analyzing.feature_selection import * 
 from Data_Cleansing.anomaly_detection import *
 class AnomalyReport:
-    def __init__(self,data,target_name: str, problem = 'max', lower = 0, upper= 0,manual_input = None,n=5):
+    def __init__(self,data,target_name: str,  lower = 0 , upper =0,problem = 'max',manual_input = None,n=5):
         self.df = data
         self.target_name = target_name
         self.problem = problem
@@ -70,7 +70,7 @@ class AnomalyReport:
                 #separtating into good and bad outputs 
                 #filtering the top 10 most important features 
                 #outputing those to .csvs
-                p = AnomalyDetection(self.df,self.target_name,self.problem,self.lower, self.upper,self.manual_input)
+                p = AnomalyDetection(self.df,self.target_name,self.lower, self.upper,self.problem,self.manual_input)
                 goodoutput,badoutput = p.get_anomalies()
                 goodoutputtop10 = goodoutput[topn]
                 badoutputtop10 = badoutput[topn]
