@@ -1,6 +1,6 @@
 import pandas as pd 
 import plotly_express as px
-class CorrelationAnalysis:
+class CorrelationReport:
     def __init__(self,data,topn,n,target_name):
          self.df = data
          self.topn = topn
