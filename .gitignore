@@ -7,9 +7,9 @@ Thumbs.db
 .idea/
 *.swp
 *~
-**/__pycache__/ 
+__pycache__/
 #  match any __pycache__ folder regardless of its location within your project directory
-**/__init__/
+**/__init__.py
 
 
 data/raw_data/

@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from abc import ABC, abstractmethod
-import sys
-sys.path.append('../')
+# import sys
+# sys.path.append('../')
 from Data_Visualization.eda import EDA_Visualization
 
 class FillMissingStrategy(ABC):
