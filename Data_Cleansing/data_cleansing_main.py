@@ -101,7 +101,7 @@ class DataCleansing:
         #     print("No data loaded")
         pass
     
-    def detect_outliers(self, data: pd.DataFrame = None, col_name: str = None , threshold : float = 3) -> pd.DataFrame:
+    def detect_outliers(self, data: pd.DataFrame = None, col_name: str = None , threshold : float = 3):
         '''
         Detect and plot outliers for a column in the data
 
