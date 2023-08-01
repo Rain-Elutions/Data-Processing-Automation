@@ -80,14 +80,12 @@ class AnomalyReport:
                 badoutputtop.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsbad.xlsx',index=False)
 
                 #making boxplots
+                k = len(goodoutputtop.columns)-1
                 if not goodoutputtop.empty and not badoutputtop.empty:
-                    for i in range(0,(len(self.df.columns)-2)):
-                        print(i)
+                    for i in range(0,k):
                         if i % 2 == 0:
                             good = goodoutputtop.iloc[:,i:i+2]
                             bad = badoutputtop.iloc[:,i:i+2]
-                            print(i)
-                            print(good.shape)
                             vis = BoxPlots(good,bad,good.columns[0],good.columns[1])
                             vis.double_boxplot()
                 #Rest of the code for creating boxplots

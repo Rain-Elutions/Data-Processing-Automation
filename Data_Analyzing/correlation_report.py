@@ -39,6 +39,7 @@ class CorrelationReport:
             
 
             #merging the top corelations together
-            for i in range(0,len(self.df.columns)):
+            k = len(top10relationspearson.columns)-1
+            for i in range(0,k):
                 pearson = top10relationspearson.iloc[:,i:i+1].sort_values(by=top10relationspearson.columns[i],ascending=False)
                 pearson.to_excel('./anomaly_report/xlsx/' + pearson.columns[0] +' corr.xlsx')
