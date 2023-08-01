@@ -8,7 +8,7 @@ class AnomalyDetection:
             self.problem_type = problem_type
             self.manual_input = manual_input
 
-        def get_bound(self): - > float, float:
+        def get_bound(self) -> [float, float]:
             print('Finding bounds...')
             quartiles = self.df[self.target_name].quantile([0.25, 0.75])
             iqr = quartiles[0.75] - quartiles[0.25]

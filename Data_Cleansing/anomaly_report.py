@@ -71,22 +71,28 @@ class AnomalyReport:
                 #filtering the top 10 most important features 
                 #outputing those to .csvs
                 p = AnomalyDetection(self.df, self.target_name, self.problem, self.manual_input)
-                lower, upper = p.get_thresholds()
+                lower, upper = p.get_bound()
                 goodoutput,badoutput = p.get_anomalies()
-                goodoutputtop10 = goodoutput[topn]
-                badoutputtop10 = badoutput[topn]
+                goodoutputtop = goodoutput[topn]
+                badoutputtop = badoutput[topn]
 
-                goodoutputtop10.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsgood.xlsx',index=False)
-                badoutputtop10.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsbad.xlsx',index=False)
+                goodoutputtop.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsgood.xlsx',index=False)
+                badoutputtop.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsbad.xlsx',index=False)
 
                 #making boxplots
-                for i in range(0,10):
-                    if i % 2 == 0:
-                        good = goodoutputtop10.iloc[:,i:i+2]
-                        bad = badoutputtop10.iloc[:,i:i+2]
-                        vis = BoxPlots(good,bad,good.columns[0],good.columns[1])
-                        vis.double_boxplot()
-
+                if not goodoutputtop.empty and not badoutputtop.empty:
+                    for i in range(0,(len(self.df.columns)-2)):
+                        print(i)
+                        if i % 2 == 0:
+                            good = goodoutputtop.iloc[:,i:i+2]
+                            bad = badoutputtop.iloc[:,i:i+2]
+                            print(i)
+                            print(good.shape)
+                            vis = BoxPlots(good,bad,good.columns[0],good.columns[1])
+                            vis.double_boxplot()
+                #Rest of the code for creating boxplots
+                else:
+                    print("Error: The DataFrames goodoutputtop and/or badoutputtop are empty.")
                 
                 #creating correlation csvs
                 corr = CorrelationReport(self.df,topn,self.n,self.target_name)

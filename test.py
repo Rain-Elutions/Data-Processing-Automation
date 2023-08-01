@@ -1,6 +1,7 @@
-from Data_Exploration.main import DataExploration
+from Data_Exploration.data_exploration_main import DataExploration
 from Data_Visualization.eda import EDA_Visualization
-
+from Data_Cleansing.anomaly_detection import  AnomalyDetection
+from Data_Cleansing.anomaly_report import AnomalyReport
 
 if __name__ == '__main__':
     # ----------------- Test DataExploration -----------------
@@ -8,8 +9,8 @@ if __name__ == '__main__':
 
     #### load_data() function ####
     # df = data_exp.load_data('./data/lng_data_sample.csv', parse_dates=True, index_col=0)
-    # df = data_exp.load_data('./data/sasol_data_sample.csv', parse_dates=True, index_col=0)
-    df = data_exp.load_data('./data/coyote_data_sample_100.xlsx', parse_dates=False, index_col=0)
+    df = data_exp.load_data('./data/sasol_data_sample.csv', parse_dates=True, index_col=0)
+    # df = data_exp.load_data('./data/coyote_data_sample_100.xlsx', parse_dates=False, index_col=0)
     # df = data_exp.load_data('./data/coyote_data_sample_1000.pickle', parse_dates=False, index_col=0)
     # df = data_exp.load_data(1)
 
@@ -28,4 +29,5 @@ if __name__ == '__main__':
     eda_vis.visualize_missing_data()
 
     # ----------------- Test DataCleansing -----------------
-    
+    anom_detect = AnomalyReport(df,'OXO-5FI696 Augusta')
+    anom_detect.anomaly_report()

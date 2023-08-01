@@ -6,7 +6,7 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 class BoxPlots:
-        def __init__(self,df1: pd.DataFrame,df2 = pd.DataFrame(), col_name1 = '',col_name2=''):
+        def __init__(self,df1: pd.DataFrame,df2: pd.DataFrame, col_name1 = '',col_name2=''):
                 self.df1 = df1
                 self.df2 = df2
                 self.col_name1 = col_name1

@@ -38,7 +38,7 @@ class CorrelationReport:
             fig.write_html("./anomaly_report/graphics/" + self.target_name + ".html")
             
 
-            #merging the top 10 corelations together
-            for i in range(0,10):
+            #merging the top corelations together
+            for i in range(0,len(self.df.columns)):
                 pearson = top10relationspearson.iloc[:,i:i+1].sort_values(by=top10relationspearson.columns[i],ascending=False)
                 pearson.to_excel('./anomaly_report/xlsx/' + pearson.columns[0] +' corr.xlsx')
