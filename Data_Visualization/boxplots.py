@@ -17,12 +17,12 @@ class BoxPlots:
                 '''
                 Function to make side by side boxplots for 
                 the top 10 attributes, based on whether the 
-                output was good or not
+                output was optimal or not
                 ----------
                 df1 : pd.DataFrame
-                        data of good bathces 
+                        data of optimal bathces 
                 df2 : pd.DataFrame
-                        data of bad bathces 
+                        data of suboptimal bathces 
                 col_name1: str
                         First tag of interest 
                 col_name2: str
@@ -46,7 +46,7 @@ class BoxPlots:
                                                         )
                                 )
                 fig.add_trace(go.Box(y=self.df1[self.col_name1],
-                                        name='Good'
+                                        name='optimal'
 
                                         ),
                                         row=1, col=1)
@@ -81,7 +81,7 @@ class BoxPlots:
 
                 #adding the second box
                 fig.add_trace(go.Box(y=self.df2[self.col_name1],
-                                        name='Bad'
+                                        name='suboptimal'
 
                                         ),
                                         row=1, col=1)
@@ -126,7 +126,7 @@ class BoxPlots:
                 #Making the second Subplot
                 #adding the first box
                 fig.add_trace(go.Box(y=self.df1[self.col_name2],
-                                        name='Good'
+                                        name='optimal'
 
                                         ),
                                         row=1, col=2)
@@ -164,7 +164,7 @@ class BoxPlots:
 
                 #adding the second box
                 fig.add_trace(go.Box(y=self.df2[self.col_name2],
-                                        name='Bad'
+                                        name='suboptimal'
 
                                         ),
                                         row=1, col=2)
@@ -216,9 +216,6 @@ class BoxPlots:
                                         font=dict(family="Times New Roman", size= 14),
                                         hoverlabel=dict(font_color="floralwhite"),
                                         showlegend=True)
-                plotly.io.write_image(fig, file= './anomaly_report/graphics/' + self.col_name1 + self.col_name2 + '.png',format='png', width=1600,height=950)
-                plotly.io.write_image(fig, file= './anomaly_report/graphics/' + self.col_name1 + self.col_name2 + '.pdf',format='pdf', width=1600,height=950)
-                
-                
+                plotly.io.write_image(fig, file= './Data_Cleansing/anomaly_report/graphics/' + self.col_name1 + self.col_name2 + '.png',format='png', width=1600,height=950)
                 
                 return
