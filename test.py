@@ -1,7 +1,6 @@
 from Data_Exploration.data_exploration_main import DataExploration
 from Data_Visualization.eda import EDA_Visualization
-from Data_Cleansing.anomaly_detection import  AnomalyDetection
-from Data_Cleansing.anomaly_report import AnomalyReport
+from Data_Cleansing.anomaly_detection import AnomalyDetection
 
 if __name__ == '__main__':
     # ----------------- Test DataExploration -----------------
@@ -29,5 +28,5 @@ if __name__ == '__main__':
     eda_vis.visualize_missing_data()
 
     # ----------------- Test DataCleansing -----------------
-    anom_detect = AnomalyReport(df,'OXO-5FI696 Augusta')
+    anom_detect = AnomalyDetection(df,'OXO-5FI696 Augusta')
     anom_detect.anomaly_report()

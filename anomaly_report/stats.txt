@@ -1,4 +1,0 @@
-Total number of instances observed by Maestro (Date Range): 1002019-11-01 00:00:00 - 2019-11-05 03:00:00
-Total number of operational tags: 59
-Total number of sub-optimal (OXO-5FI696 Augusta greater than9422.718920580732) instances: 17
-Total number of optimal (9422.718920580732 not greater thanOXO-5FI696 Augusta) instances: 83
