@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 class AnomalyDetection:
-        def __init__(self, data, target_name: str, problem_type: str = 'min', manual_input = None):
+        def __init__(self, data, target_name: str, problem_type: str = 'max', manual_input = None):
             self.df = data
             self.target_name = target_name
             self.problem_type = problem_type
