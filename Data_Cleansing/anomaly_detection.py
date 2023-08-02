@@ -14,7 +14,31 @@ class AnomalyDetection:
             self.n = n
 
         def get_bound(self) -> [float, float]:
+            '''
+            Function to automatically get the bounds of the 
+            target tag based on problem type
+            ----------
+            df : pd.DataFrame
+                    data of intrest
+            target_name: str
+                    column of interest
+            problem_type:str
+                what kind of inequality do you want
+                "max": >= 
+                "min":<= 
+                "range":>= and <=
+            manual_input:[float,float]
+                manual threshold to compare to
+            Returns
+            -------
+            lower : float
+                lower bound of the target tag
+            upper : float
+                upper bound of the target tag
+            '''
             print('Finding bounds...')
+
+            #determining Q1,Q3 and iqr
             quartiles = self.df[self.target_name].quantile([0.25, 0.75])
             iqr = quartiles[0.75] - quartiles[0.25]
 
@@ -24,10 +48,12 @@ class AnomalyDetection:
             elif self.problem_type == 'min':
                 lower = min(self.df[self.target_name])
                 upper = quartiles[0.75] + (1.5*iqr)
+                #making sure there are no negative values
                 if lower < 0:
                     lower = 0 
             elif self.problem_type == 'range':
                 lower = quartiles[0.25] - (1.5*iqr)
+                #making sure there are no negative values
                 if lower < 0:
                     lower = 0 
                 upper = quartiles[0.75] + (1.5*iqr)
@@ -43,28 +69,22 @@ class AnomalyDetection:
             each other in a dataset based on a certain threshold
             ----------
             df : pd.DataFrame
-                data of intrest
-            self.target_name: str
-                column of interest
-            goodthreshold: int
-                threshold on which to filter
-            self.threshtype:str
+                    data of intrest
+            target_name: str
+                    column of interest
+            problem_type:str
                 what kind of inequality do you want
-                "greater": >= 
-                "lesser":<= 
-                "both":>= and <=
-            self.thresh1:int
-                threshold to compare to. 
-                When threshtype = "both" >=
-            self.thresh2:int
-                threshold to compare to. 
-                When threshtype = "both" <=
+                "max": >= 
+                "min":<= 
+                "range":>= and <=
+            manual_input:[float,float]
+                manual threshold to compare to
             Returns
             -------
-            good : pd.DataFrame
-                data of good bathces 
-            bad : pd.DataFrame
-                data of bad bathces 
+            optimal : pd.DataFrame
+                data of optimal instances
+            suboptimal : pd.DataFrame
+                data of suboptimal instances
             '''
             # creating the filter column based on given threshold
             if type(self.manual_input) == tuple:
@@ -85,7 +105,7 @@ class AnomalyDetection:
             else:
                 print('ERROR: choose another filter type')
 
-            # splitting the data based on whether or not it is good or bad
+            # splitting the data based on whether or not it is optimal or suboptimal
             optimal = df[df['Anomaly']== 0]
             suboptimal = df[df['Anomaly']== 1]
 
@@ -100,45 +120,40 @@ class AnomalyDetection:
                     data of intrest
                 target_name: str
                     column of interest
-                self.fname: str
-                    file name to save boruta files to
-                threshtype:str
+                problem_type:str
                     what kind of inequality do you want
-                    "greater": >= 
-                    "lesser":<= 
-                    "both":>= and <=
-                thresh1:int
-                    threshold to compare to. 
-                    When threshtype = "both" >=
-                thresh2:int
-                    threshold to compare to. 
-                    When threshtype = "both" <=
+                    "max": >= 
+                    "min":<= 
+                    "range":>= and <=
+                manual_input:[float,float]
+                    manual threshold to compare to
                 Returns
                 -------
-                top10: list
-                    list of the top 10
-                    most important features
-                optimaloutputtop10.csv
-                    all time stamps for the top10 tags that had optimal outputs
+                optimaloutputtop.csv
+                    all time stamps for the topn correlated tags that had optimal outputs
                 suboptimaloutputtop10.csv
-                    all time stamps for the top10 tags that had suboptimal outputs
+                    all time stamps for the topn correlated that had suboptimal outputs
                 boxplots
-                    pdfs and pngs of boxplots of 
-                    optimal vs suboptimal outputs for top10 tags
+                    pngs boxplots of 
+                    optimal vs suboptimal outputs for topn tags
                 correlations
-                    pearson and spearman csvs for top10 tags 
+                    correlation csvs for topn tags 
                 '''
+
                 #creating all the folders and subfolders for 
                 #the process 
                 
                 try:
                     os.mkdir('./Data_Cleansing/anomaly_report')
                     os.mkdir('./Data_Cleansing/anomaly_report/xlsx')
+                    os.mkdir('./Data_Cleansing/anomaly_report/xlsx/correlations')
                     os.mkdir('./Data_Cleansing/anomaly_report/graphics')
                 except OSError as error:
                     print(error)
                 
-
+                target = self.df[self.target_name]
+                self.df = self.df.drop(self.target_name,axis=1)
+                self.df.insert(0,self.target_name,target)
                 #feature selecting to find the top 10 most important features
                 #(change to the top n/k/j.......whatever)
                 args = FeatureSelection(self.df,self.target_name)
@@ -154,8 +169,8 @@ class AnomalyDetection:
                 optimaloutputtop = optimaloutput[topn]
                 suboptimaloutputtop = suboptimaloutput[topn]
 
-                optimaloutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagsoptimal.xlsx', index=False)
-                suboptimaloutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagssuboptimal.xlsx', index=False)
+                optimaloutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagsoptimal.xlsx', index=True)
+                suboptimaloutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagssuboptimal.xlsx', index=True)
 
                 #making boxplots
                 k = len(optimaloutputtop.columns)-1
@@ -173,6 +188,8 @@ class AnomalyDetection:
                 corr = CorrelationReport(self.df, topn, self.n, self.target_name)
                 corr.correlations()
 
+
+                #Making Basic Stats for IES
                 if self.problem_type == 'max':
                      threshtype = 'greater than '
                      bound = str(lower)
@@ -190,6 +207,8 @@ class AnomalyDetection:
                     f.write('Total number of instances observed by Maestro: ' + str(len(self.df)))
                     f.write('\n')
                     f.write('Total number of operational tags: ' + str(len(self.df.columns)))
+                    f.write('\n')
+                    f.write('Number of important tags: ' + str(len(topn)))
                     f.write('\n')
                     f.write('Total number of sub-optimal ('+ self.target_name +' '+ threshtype + bound + ') instances: ' + str(len(suboptimaloutput)))
                     f.write('\n')
