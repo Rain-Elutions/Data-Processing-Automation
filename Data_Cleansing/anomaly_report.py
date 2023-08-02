@@ -3,13 +3,12 @@ from Data_Visualization.boxplots import *
 from Data_Analyzing.correlation_report import *
 from Data_Analyzing.feature_selection import * 
 from Data_Cleansing.anomaly_detection import *
+
 class AnomalyReport:
-    def __init__(self,data, target_name: str, problem='max', manual_input=None, n=5):
+    def __init__(self,data, target_name: str, problem='min', manual_input=None, n=5):
         self.df = data
         self.target_name = target_name
         self.problem = problem
-        # self.lower = lower
-        # self.upper = upper
         self.manual_input = manual_input
         self.n = n
         
@@ -54,9 +53,9 @@ class AnomalyReport:
                 #the process 
                 
                 try:
-                    os.mkdir('./anomaly_report')
-                    os.mkdir('./anomaly_report/xlsx')
-                    os.mkdir('./anomaly_report/graphics')
+                    os.mkdir('./Data_Cleansing/anomaly_report')
+                    os.mkdir('./Data_Cleansing/anomaly_report/xlsx')
+                    os.mkdir('./Data_Cleansing/anomaly_report/graphics')
                 except OSError as error:
                     print(error)
                 
@@ -72,12 +71,12 @@ class AnomalyReport:
                 #outputing those to .csvs
                 p = AnomalyDetection(self.df, self.target_name, self.problem, self.manual_input)
                 lower, upper = p.get_bound()
-                goodoutput,badoutput = p.get_anomalies()
+                goodoutput, badoutput = p.get_anomalies()
                 goodoutputtop = goodoutput[topn]
                 badoutputtop = badoutput[topn]
 
-                goodoutputtop.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsgood.xlsx',index=False)
-                badoutputtop.to_excel('./anomaly_report/xlsx/'+self.target_name+'toptagsbad.xlsx',index=False)
+                goodoutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagsgood.xlsx', index=False)
+                badoutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagsbad.xlsx', index=False)
 
                 #making boxplots
                 k = len(goodoutputtop.columns)-1
@@ -93,22 +92,24 @@ class AnomalyReport:
                     print("Error: The DataFrames goodoutputtop and/or badoutputtop are empty.")
                 
                 #creating correlation csvs
-                corr = CorrelationReport(self.df,topn,self.n,self.target_name)
+                corr = CorrelationReport(self.df, topn, self.n, self.target_name)
                 corr.correlations()
 
                 if self.problem == 'max':
-                     threshtype = 'greater than'
+                     threshtype = 'greater than '
                      bound = str(lower)
                 elif self.problem == 'min':
-                     threshtype = 'less than'
+                     threshtype = 'less than '
                      bound = str(upper)
                 elif self.problem == 'both':
-                     threshtype = 'between'
+                     threshtype = 'between '
                      bound = ''
                 else:
                      print('Invalid Threshold type')
-                with open('./anomaly_report/stats.txt', 'w') as f:
-                    f.write('Total number of instances observed by Maestro (Date Range): ' + str(len(self.df)) + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
+                with open('./Data_Cleansing/anomaly_report/stats.txt', 'w') as f:
+                    f.write('Date Range: ' + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
+                    f.write('\n')
+                    f.write('Total number of instances observed by Maestro (Date Range): ' + str(len(self.df)))
                     f.write('\n')
                     f.write('Total number of operational tags: ' + str(len(self.df.columns)))
                     f.write('\n')
