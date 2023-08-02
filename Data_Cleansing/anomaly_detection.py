@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 import numpy as np
 from Data_Visualization.boxplots import *
@@ -39,7 +41,7 @@ class AnomalyDetection:
             '''
             print('Finding bounds...')
 
-            #determining Q1,Q3 and iqr
+            # determining Q1,Q3 and iqr
             quartiles = self.df[self.target_name].quantile([0.25, 0.75])
             iqr = quartiles[0.75] - quartiles[0.25]
 
@@ -49,12 +51,12 @@ class AnomalyDetection:
             elif self.problem_type == 'min':
                 lower = min(self.df[self.target_name])
                 upper = quartiles[0.75] + (1.5*iqr)
-                #making sure there are no negative values
+                # making sure there are no negative values
                 if lower < 0:
                     lower = 0 
             elif self.problem_type == 'range':
                 lower = quartiles[0.25] - (1.5*iqr)
-                #making sure there are no negative values
+                # making sure there are no negative values
                 if lower < 0:
                     lower = 0 
                 upper = quartiles[0.75] + (1.5*iqr)
@@ -157,15 +159,15 @@ class AnomalyDetection:
                 target = self.df[self.target_name]
                 self.df = self.df.drop(self.target_name,axis=1)
                 self.df.insert(0,self.target_name,target)
-                #feature selecting to find the top 10 most important features
-                #(change to the top n/k/j.......whatever)
+                # feature selecting to find the top 10 most important features
+                # (change to the top n/k/j.......whatever)
                 args = FeatureSelection(self.df,self.target_name)
                 topn = args.correlation_selection().index
                 print('Selected Features are' , topn)
 
-                #separtating into optimal and suboptimal outputs 
-                #filtering the top 10 most important features 
-                #outputing those to .csvs
+                # separtating into optimal and suboptimal outputs 
+                # filtering the top 10 most important features 
+                # outputing those to .csvs
                 p = AnomalyDetection(self.df, self.target_name, self.problem_type, self.manual_input)
                 lower, upper = p.get_bound()
                 optimaloutput, suboptimaloutput = p.get_anomalies()
@@ -175,7 +177,7 @@ class AnomalyDetection:
                 optimaloutputtop.to_excel('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/'+self.target_name+'_toptagsoptimal.xlsx', index=True)
                 suboptimaloutputtop.to_excel('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/'+self.target_name+'_toptagssuboptimal.xlsx', index=True)
 
-                #making boxplots
+                # making boxplots
                 k = len(optimaloutputtop.columns)-1
                 if not optimaloutputtop.empty and not suboptimaloutputtop.empty:
                     for i in range(0,k):
@@ -192,7 +194,7 @@ class AnomalyDetection:
                 corr.correlations()
 
 
-                #Making Basic Stats for IES
+                # Making Basic Stats for IES
                 if self.problem_type == 'max':
                      threshtype = 'greater than '
                      bound = str(lower)
