@@ -6,9 +6,10 @@ from Data_Analyzing.correlation_report import *
 from Data_Analyzing.feature_selection import * 
 
 class AnomalyDetection:
-        def __init__(self, data, target_name: str, problem_type: str = 'max', manual_input = None,n=5):
+        def __init__(self, data, target_name: str, problem_type: str = 'max', manual_input = None,dataname='',n=5):
             self.df = data
             self.target_name = target_name
+            self.dataname = dataname
             self.problem_type = problem_type
             self.manual_input = manual_input
             self.n = n
@@ -61,6 +62,7 @@ class AnomalyDetection:
                 print('Invalid problem type')
 
             print('Found Bounds!')
+
             return lower, upper
 
         def get_anomalies(self) -> pd.DataFrame:
@@ -142,12 +144,13 @@ class AnomalyDetection:
 
                 #creating all the folders and subfolders for 
                 #the process 
+                dataname = os.path.splitext(os.path.basename(self.dataname))[0]
                 
                 try:
-                    os.mkdir('./Data_Cleansing/anomaly_report')
-                    os.mkdir('./Data_Cleansing/anomaly_report/xlsx')
-                    os.mkdir('./Data_Cleansing/anomaly_report/xlsx/correlations')
-                    os.mkdir('./Data_Cleansing/anomaly_report/graphics')
+                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report')
+                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx')
+                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/correlations')
+                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report/graphics')
                 except OSError as error:
                     print(error)
                 
@@ -169,8 +172,8 @@ class AnomalyDetection:
                 optimaloutputtop = optimaloutput[topn]
                 suboptimaloutputtop = suboptimaloutput[topn]
 
-                optimaloutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagsoptimal.xlsx', index=True)
-                suboptimaloutputtop.to_excel('./Data_Cleansing/anomaly_report/xlsx/'+self.target_name+'_toptagssuboptimal.xlsx', index=True)
+                optimaloutputtop.to_excel('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/'+self.target_name+'_toptagsoptimal.xlsx', index=True)
+                suboptimaloutputtop.to_excel('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/'+self.target_name+'_toptagssuboptimal.xlsx', index=True)
 
                 #making boxplots
                 k = len(optimaloutputtop.columns)-1
@@ -179,13 +182,13 @@ class AnomalyDetection:
                         if i % 2 == 0:
                             optimal = optimaloutputtop.iloc[:,i:i+2]
                             suboptimal = suboptimaloutputtop.iloc[:,i:i+2]
-                            vis = BoxPlots(optimal,suboptimal,optimal.columns[0],optimal.columns[1])
+                            vis = BoxPlots(optimal,suboptimal,dataname,optimal.columns[0],optimal.columns[1])
                             vis.double_boxplot()
                 else:
                     print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
                 
                 #creating correlation csvs
-                corr = CorrelationReport(self.df, topn, self.n, self.target_name)
+                corr = CorrelationReport(self.df, topn, self.n, self.target_name,dataname)
                 corr.correlations()
 
 
@@ -201,7 +204,7 @@ class AnomalyDetection:
                      bound = ''
                 else:
                      print('Invalid Threshold type')
-                with open('./Data_Cleansing/anomaly_report/stats.txt', 'w') as f:
+                with open('./Data_Cleansing/'+ dataname +'_anomaly_report/stats.txt', 'w') as f:
                     f.write('Date Range: ' + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
                     f.write('\n')
                     f.write('Total number of instances observed by Maestro: ' + str(len(self.df)))

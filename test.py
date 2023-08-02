@@ -7,11 +7,11 @@ if __name__ == '__main__':
     data_exp = DataExploration()
 
     #### load_data() function ####
-    # df = data_exp.load_data('./data/lng_data_sample.csv', parse_dates=True, index_col=0)
-    df = data_exp.load_data('./data/sasol_data_sample.csv', parse_dates=True, index_col=0)
-    # df = data_exp.load_data('./data/coyote_data_sample_100.xlsx', parse_dates=False, index_col=0)
-    # df = data_exp.load_data('./data/coyote_data_sample_1000.pickle', parse_dates=False, index_col=0)
-    # df = data_exp.load_data(1)
+    fname = './data/sasol_data_sample.csv'
+    # fname = './data/coyote_data_sample_100.xlsx'
+    # fname = './data/coyote_data_sample_1000.pickle'
+    # fname = './data/lng_data_sample.csv'
+    df = data_exp.load_data(fname, parse_dates=True, index_col=0)
 
     #### get_data_size() function ####
     data_exp.get_data_size()
@@ -25,8 +25,8 @@ if __name__ == '__main__':
 
     #### visualize_missing_data() function ####
     eda_vis = EDA_Visualization(df)
-    eda_vis.visualize_missing_data()
+    eda_vis.visualize_missing_data()    
 
     # ----------------- Test DataCleansing -----------------
-    anom_detect = AnomalyDetection(df,'OXO-5FI696 Augusta')
+    anom_detect = AnomalyDetection(data= df,target_name='OXO-5FI696 Augusta',dataname=fname,problem_type='max')
     anom_detect.anomaly_report()
