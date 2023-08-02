@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from abc import ABC, abstractmethod
-# import sys
-# sys.path.append('../')
+import sys
+import os
+# in python script, use absolute path of this file to add the parent directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Data_Visualization.eda import EDA_Visualization
 
 class FillMissingStrategy(ABC):

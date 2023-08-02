@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Data_Visualization.boxplots import *
 from Data_Analyzing.correlation_report import *
 from Data_Analyzing.feature_selection import * 
@@ -11,7 +13,7 @@ class AnomalyReport:
         self.problem = problem
         self.manual_input = manual_input
         self.n = n
-        
+    
     def anomaly_report(self):
                 '''
                 Function to automate the creation of 
