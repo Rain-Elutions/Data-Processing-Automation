@@ -7,6 +7,18 @@ from Data_Visualization.boxplots import *
 from Data_Analyzing.correlation_report import *
 from Data_Analyzing.feature_selection import * 
 
+
+def create_directory_with_numbered_suffix(base_path, directory_name):
+    while True:
+        new_directory_name = f'{directory_name}'
+        new_directory_path = os.path.join(base_path, new_directory_name)
+        try:
+            os.mkdir(new_directory_path)
+            return new_directory_name, new_directory_path
+        except OSError:
+            print(f'{new_directory_path} already exists, trying again...')
+
+
 class AnomalyDetection:
         """
         Class to automate the detection of anomalies 
@@ -24,21 +36,15 @@ class AnomalyDetection:
             "range":>= and <=
         manual_input:[float,float]
             manual threshold to compare to
-        dataname:str
-            file path of the data
-        n: int 
-            number of columns to use for the correlation matrix
         manual_thresh:float 
             0<x<1 threshold for determining anomalous 
             instances 
         """
-        def __init__(self, data, target_name: str, problem_type: str = 'max', manual_input = None,dataname='',n=5,manual_thresh:float = None):
+        def __init__(self, data, target_name: str = '', problem_type: str = 'max', manual_input=None, manual_thresh=None):
             self.df = data
             self.target_name = target_name
-            self.dataname = dataname
             self.problem_type = problem_type
             self.manual_input = manual_input
-            self.n = n
             self.manual_thresh = manual_thresh
 
         def get_bound(self):
@@ -182,26 +188,16 @@ class AnomalyDetection:
                     correlation csvs for topn tags 
                 '''
 
-                #creating all the folders and subfolders for 
-                #the process 
-                dataname = os.path.splitext(os.path.basename(self.dataname))[0]
-                def create_directory_with_numbered_suffix(base_path, directory_name):
-                    suffix = 1
-                    while True:
-                        new_directory_name = f'{directory_name}_{suffix}'
-                        new_directory_path = os.path.join(base_path, new_directory_name)
-                        try:
-                            os.mkdir(new_directory_path)
-                            return new_directory_path
-                        except OSError:
-                            suffix += 1
+                # creating all the folders and subfolders for 
+                # the process 
+                # dataname = os.path.splitext(os.path.basename(self.target_name))[0]
 
                 base_directory = './Data_Cleansing/'
 
-                new_directory = create_directory_with_numbered_suffix(base_directory, dataname + '_anomaly_report')
-                os.mkdir(os.path.join(new_directory, 'xlsx'))
-                os.mkdir(os.path.join(new_directory, 'xlsx', 'correlations'))
-                os.mkdir(os.path.join(new_directory, 'graphics'))
+                new_directory_name, new_directory_path = create_directory_with_numbered_suffix(base_directory, self.target_name + '_anomaly_report')
+                os.mkdir(os.path.join(new_directory_path, 'xlsx'))
+                os.mkdir(os.path.join(new_directory_path, 'xlsx', 'correlations'))
+                os.mkdir(os.path.join(new_directory_path, 'graphics'))
                 
                 target = self.df[self.target_name]
                 self.df = self.df.drop(self.target_name,axis=1)
@@ -220,8 +216,8 @@ class AnomalyDetection:
                 optimaloutputtop = optimaloutput[topn]
                 suboptimaloutputtop = suboptimaloutput[topn]
 
-                optimaloutputtop.to_excel('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/'+self.target_name+'_toptagsoptimal.xlsx', index=True)
-                suboptimaloutputtop.to_excel('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/'+self.target_name+'_toptagssuboptimal.xlsx', index=True)
+                optimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + self.target_name + '_toptagsoptimal.xlsx', index=True)
+                suboptimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + self.target_name + '_toptagssuboptimal.xlsx', index=True)
 
                 # making boxplots
                 k = len(optimaloutputtop.columns)-1
@@ -230,13 +226,13 @@ class AnomalyDetection:
                         if i % 2 == 0:
                             optimal = optimaloutputtop.iloc[:,i:i+2]
                             suboptimal = suboptimaloutputtop.iloc[:,i:i+2]
-                            vis = BoxPlots(optimal,suboptimal,dataname,optimal.columns[0],optimal.columns[1])
+                            vis = BoxPlots(optimal,suboptimal,self.target_name,optimal.columns[0],optimal.columns[1])
                             vis.double_boxplot()
                 else:
                     print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
                 
                 #creating correlation csvs
-                corr = CorrelationReport(self.df, topn, self.n, self.target_name,dataname)
+                corr = CorrelationReport(self.df, topn, self.target_name)
                 corr.correlations()
 
 
@@ -252,7 +248,7 @@ class AnomalyDetection:
                      bound = ''
                 else:
                      print('Invalid Threshold type')
-                with open('./Data_Cleansing/'+ dataname +'_anomaly_report/stats.txt', 'w') as f:
+                with open('./Data_Cleansing/'+ new_directory_name +'/stats.txt', 'w') as f:
                     f.write('Date Range: ' + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
                     f.write('\n')
                     f.write('Total number of instances observed by Maestro: ' + str(len(self.df)))

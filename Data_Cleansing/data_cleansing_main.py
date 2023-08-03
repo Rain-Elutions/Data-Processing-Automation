@@ -95,9 +95,23 @@ class DataCleansing:
         return data
 
     
-    def generate_anomaly_report(self, data: pd.DataFrame = None, target_col : str = None):
+    def generate_anomaly_report(self, data: pd.DataFrame = None, target_name : str = '', problem_type : str = 'max', manual_input=None, manual_thresh=None):
+        '''
+        Generate anomaly report for the target variable in the input data
+
+        Parameters:
+        - data: the input data
+        - target_col: the column name of the target variable
+
+        Returns:
+        A anomaly_report folder that has:
+        - graphics: the folder containing the plots
+        - xlsx: the folder containing the excel file, including the correlation table and the final report
+        - stats.txt: the file containing the basic stats for IES
+        '''
+
         data = data if data is not None else self.data
-        anom_detect = AnomalyDetection(data, target_col)
+        anom_detect = AnomalyDetection(data, target_name, problem_type=problem_type, manual_input=manual_input, manual_thresh=manual_thresh)
         anom_detect.anomaly_report()
 
         return
@@ -107,7 +121,7 @@ class DataCleansing:
         Detect and plot outliers for a column in the data
 
         Parameters:
-        - data: input data
+        - data: the input data
         - col_name: the column name to be checked
         - threshold: the threshold for detecting outliers using z-score
         '''
