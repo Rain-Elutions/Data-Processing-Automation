@@ -8,15 +8,40 @@ from Data_Analyzing.correlation_report import *
 from Data_Analyzing.feature_selection import * 
 
 class AnomalyDetection:
-        def __init__(self, data, target_name: str, problem_type: str = 'max', manual_input = None,dataname='',n=5):
+        """
+        Class to automate the detection of anomalies 
+        across multiple datasets, and create an anomaly report
+        for the IES team
+        ----------
+        data : pd.DataFrame
+                data of intrest
+        target_name: str
+                column of interest
+        problem_type:str
+            what kind of inequality do you want
+            "max": >= 
+            "min":<= 
+            "range":>= and <=
+        manual_input:[float,float]
+            manual threshold to compare to
+        dataname:str
+            file path of the data
+        n: int 
+            number of columns to use for the correlation matrix
+        manual_thresh:float 
+            0<x<1 threshold for determining anomalous 
+            instances 
+        """
+        def __init__(self, data, target_name: str, problem_type: str = 'max', manual_input = None,dataname='',n=5,manual_thresh:float = None):
             self.df = data
             self.target_name = target_name
             self.dataname = dataname
             self.problem_type = problem_type
             self.manual_input = manual_input
             self.n = n
+            self.manual_thresh = manual_thresh
 
-        def get_bound(self) -> [float, float]:
+        def get_bound(self):
             '''
             Function to automatically get the bounds of the 
             target tag based on problem type
@@ -40,34 +65,47 @@ class AnomalyDetection:
                 upper bound of the target tag
             '''
             print('Finding bounds...')
+            if self.manual_thresh == None:
+                # determining Q1,Q3 and iqr
+                quartiles = self.df[self.target_name].quantile([0.25, 0.75])
+                iqr = quartiles[0.75] - quartiles[0.25]
 
-            # determining Q1,Q3 and iqr
-            quartiles = self.df[self.target_name].quantile([0.25, 0.75])
-            iqr = quartiles[0.75] - quartiles[0.25]
-
-            if self.problem_type == 'max':
-                lower = quartiles[0.25] - (1.5*iqr)
-                upper = max(self.df[self.target_name])   
-            elif self.problem_type == 'min':
-                lower = min(self.df[self.target_name])
-                upper = quartiles[0.75] + (1.5*iqr)
-                # making sure there are no negative values
-                if lower < 0:
-                    lower = 0 
-            elif self.problem_type == 'range':
-                lower = quartiles[0.25] - (1.5*iqr)
-                # making sure there are no negative values
-                if lower < 0:
-                    lower = 0 
-                upper = quartiles[0.75] + (1.5*iqr)
+                if self.problem_type == 'max':
+                    lower = quartiles[0.25] - (1.5*iqr)
+                    upper = max(self.df[self.target_name])   
+                elif self.problem_type == 'min':
+                    lower = min(self.df[self.target_name])
+                    upper = quartiles[0.75] + (1.5*iqr)
+                    # making sure there are no negative values
+                    if lower < 0:
+                        lower = 0 
+                elif self.problem_type == 'range':
+                    lower = quartiles[0.25] - (1.5*iqr)
+                    # making sure there are no negative values
+                    if lower < 0:
+                        lower = 0 
+                    upper = quartiles[0.75] + (1.5*iqr)
+                else:
+                    print('Invalid problem type')
             else:
-                print('Invalid problem type')
+                custom_quartile = self.df[self.target_name].quantile(self.manual_thresh)
+                if self.problem_type == 'max':
+                    lower = custom_quartile
+                    upper = max(self.df[self.target_name])   
+                elif self.problem_type == 'min':
+                    lower = min(self.df[self.target_name])
+                    upper = custom_quartile
+                    # making sure there are no negative values
+                    if lower < 0:
+                        lower = 0 
+                else:
+                    print('Invalid problem type')
 
             print('Found Bounds!')
 
             return lower, upper
 
-        def get_anomalies(self) -> pd.DataFrame:
+        def get_anomalies(self):
             '''
             Function to seperate the good and bad outputs from 
             each other in a dataset based on a certain threshold
@@ -147,30 +185,38 @@ class AnomalyDetection:
                 #creating all the folders and subfolders for 
                 #the process 
                 dataname = os.path.splitext(os.path.basename(self.dataname))[0]
-                
-                try:
-                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report')
-                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx')
-                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report/xlsx/correlations')
-                    os.mkdir('./Data_Cleansing/'+ dataname +'_anomaly_report/graphics')
-                except OSError as error:
-                    print(error)
+                def create_directory_with_numbered_suffix(base_path, directory_name):
+                    suffix = 1
+                    while True:
+                        new_directory_name = f'{directory_name}_{suffix}'
+                        new_directory_path = os.path.join(base_path, new_directory_name)
+                        try:
+                            os.mkdir(new_directory_path)
+                            return new_directory_path
+                        except OSError:
+                            suffix += 1
+
+                base_directory = './Data_Cleansing/'
+
+                new_directory = create_directory_with_numbered_suffix(base_directory, dataname + '_anomaly_report')
+                os.mkdir(os.path.join(new_directory, 'xlsx'))
+                os.mkdir(os.path.join(new_directory, 'xlsx', 'correlations'))
+                os.mkdir(os.path.join(new_directory, 'graphics'))
                 
                 target = self.df[self.target_name]
                 self.df = self.df.drop(self.target_name,axis=1)
                 self.df.insert(0,self.target_name,target)
-                # feature selecting to find the top 10 most important features
-                # (change to the top n/k/j.......whatever)
+                # feature selecting to find the top n most important features
                 args = FeatureSelection(self.df,self.target_name)
                 topn = args.correlation_selection().index
-                print('Selected Features are' , topn)
+                topn_list = list(topn)
+                print('Selected Features are' , ', '.join(topn_list))
 
                 # separtating into optimal and suboptimal outputs 
-                # filtering the top 10 most important features 
+                # filtering the top n most important features 
                 # outputing those to .csvs
-                p = AnomalyDetection(self.df, self.target_name, self.problem_type, self.manual_input)
-                lower, upper = p.get_bound()
-                optimaloutput, suboptimaloutput = p.get_anomalies()
+                lower, upper = self.get_bound()
+                optimaloutput, suboptimaloutput = self.get_anomalies()
                 optimaloutputtop = optimaloutput[topn]
                 suboptimaloutputtop = suboptimaloutput[topn]
 
