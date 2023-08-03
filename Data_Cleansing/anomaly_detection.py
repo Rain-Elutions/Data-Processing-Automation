@@ -9,14 +9,14 @@ from Data_Analyzing.feature_selection import *
 
 
 def create_directory_with_numbered_suffix(base_path, directory_name):
-    while True:
-        new_directory_name = f'{directory_name}'
-        new_directory_path = os.path.join(base_path, new_directory_name)
-        try:
-            os.mkdir(new_directory_path)
-            return new_directory_name, new_directory_path
-        except OSError:
-            print(f'{new_directory_path} already exists, trying again...')
+    new_directory_name = f'{directory_name}'
+    new_directory_path = os.path.join(base_path, new_directory_name)
+    try:
+        os.mkdir(new_directory_path)
+        return new_directory_name, new_directory_path
+    except OSError:
+        print(f'{new_directory_path} already exists, trying again...')
+        return new_directory_name, new_directory_path
 
 
 class AnomalyDetection:
@@ -195,9 +195,13 @@ class AnomalyDetection:
                 base_directory = './Data_Cleansing/'
 
                 new_directory_name, new_directory_path = create_directory_with_numbered_suffix(base_directory, self.target_name + '_anomaly_report')
-                os.mkdir(os.path.join(new_directory_path, 'xlsx'))
-                os.mkdir(os.path.join(new_directory_path, 'xlsx', 'correlations'))
-                os.mkdir(os.path.join(new_directory_path, 'graphics'))
+                try:
+                    os.mkdir(os.path.join(new_directory_path, 'xlsx'))
+                    os.mkdir(os.path.join(new_directory_path, 'xlsx', 'correlations'))
+                    os.mkdir(os.path.join(new_directory_path, 'graphics'))
+                except OSError as error:
+                    print(error)
+
                 
                 target = self.df[self.target_name]
                 self.df = self.df.drop(self.target_name,axis=1)

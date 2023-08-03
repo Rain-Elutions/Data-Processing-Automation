@@ -28,5 +28,5 @@ if __name__ == '__main__':
     eda_vis.visualize_missing_data()    
 
     # ----------------- Test DataCleansing -----------------
-    anom_detect = AnomalyDetection(data= df,target_name='OXO-5FI696 Augusta',dataname=fname, problem_type='max',manual_thresh = .5)
+    anom_detect = AnomalyDetection(data= df,target_name='OXO-5FI696 Augusta')
     anom_detect.anomaly_report()
