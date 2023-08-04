@@ -22,23 +22,25 @@ class CorrelationReport:
                 correlation to filter
             Returns
             ----------
-            pearson csvs for top10 tags and self.target_name
+            csvs for top10 tags and self.target_name
             '''
-            #Making pearson correlations
-            allrealtionspearson = self.df.corr()
-            toprelationspearson = allrealtionspearson[self.topn]
-            tagpearson = allrealtionspearson[self.target_name].dropna().sort_values(ascending=False)
+            # Making correlations
+            # filtering the top relations
+            # sorting the correlations
+            allrealtions = self.df.corr()
+            toprelations = allrealtions[self.topn]
+            tag = allrealtions[self.target_name].dropna().sort_values(ascending=False)
 
-            #Making correlation plot for top and bottom n linear correlations
-            self.target_nametop = list(tagpearson[:5].index)
-            self.target_namebottom = list(tagpearson[(len(tagpearson)-5):len(tagpearson)].index)
-            corr1 = allrealtionspearson[self.target_nametop+self.target_namebottom].filter(self.target_nametop+self.target_namebottom,axis=0)
+            #Making correlation matrix for top and bottom n linear correlations
+            self.target_nametop = list(tag[:5].index)
+            self.target_namebottom = list(tag[(len(tag)-5):len(tag)].index)
+            corr1 = allrealtions[self.target_nametop+self.target_namebottom].filter(self.target_nametop+self.target_namebottom,axis=0)
             fig = px.imshow(corr1, color_continuous_scale='Blues')
             fig.write_html('./Data_Cleansing/'+ self.target_name +"_anomaly_report/graphics/" + self.target_name + ".html")
             
 
             #merging the top corelations together
-            k = len(toprelationspearson.columns)
+            k = len(toprelations.columns)
             for i in range(0,k):
-                pearson = toprelationspearson.iloc[:,i:i+1].sort_values(by=toprelationspearson.columns[i],ascending=False)
-                pearson.to_excel('./Data_Cleansing/'+ self.target_name +'_anomaly_report/xlsx/correlations/' + pearson.columns[0] +' corr.xlsx')
+                tagcolumncorr = toprelations.iloc[:,i:i+1].sort_values(by=toprelations.columns[i],ascending=False)
+                tagcolumncorr.to_excel('./Data_Cleansing/'+ self.target_name +'_anomaly_report/xlsx/correlations/' + tagcolumncorr.columns[0] +' corr.xlsx')

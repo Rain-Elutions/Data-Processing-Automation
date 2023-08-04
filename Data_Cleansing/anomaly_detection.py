@@ -144,6 +144,7 @@ class AnomalyDetection:
             
             df = self.df.copy()
 
+            # finding the actual anomalies 
             if self.problem_type == 'max':
                 df['Anomaly'] = np.where(np.greater_equal(self.df[self.target_name],lower), 0, 1)
             elif self.problem_type == 'min':
@@ -189,8 +190,7 @@ class AnomalyDetection:
                 '''
 
                 # creating all the folders and subfolders for 
-                # the process 
-                # dataname = os.path.splitext(os.path.basename(self.target_name))[0]
+                # the report 
 
                 base_directory = './Data_Cleansing/'
 
@@ -202,10 +202,12 @@ class AnomalyDetection:
                 except OSError as error:
                     print(error)
 
-                
+                #splitting the data 
                 target = self.df[self.target_name]
                 self.df = self.df.drop(self.target_name,axis=1)
                 self.df.insert(0,self.target_name,target)
+
+
                 # feature selecting to find the top n most important features
                 args = FeatureSelection(self.df,self.target_name)
                 topn = args.correlation_selection().index

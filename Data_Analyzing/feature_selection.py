@@ -6,6 +6,7 @@ class FeatureSelection:
         self.target_name = target_name
 
     def correlation_selection(self, threshold: float=.5):
+        # threshold being .5 comes from IES
         corr_matrix = self.data.corr()
         # get columns with correlation to target greater than threshold
         target_corr = corr_matrix[self.target_name]
