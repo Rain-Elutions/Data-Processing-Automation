@@ -3,9 +3,9 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 import numpy as np
-from Data_Visualization.boxplots import *
-from Data_Analyzing.correlation_report import *
-from Data_Analyzing.feature_selection import * 
+from Data_Visualization.boxplots import BoxPlots
+from Data_Analyzing.correlation_report import CorrelationReport
+from Data_Analyzing.feature_selection import FeatureSelection
 
 
 def create_directory_with_numbered_suffix(base_path, directory_name):

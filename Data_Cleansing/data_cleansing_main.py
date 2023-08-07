@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Data_Visualization.eda import EDA_Visualization
 from Data_Cleansing.anomaly_detection import AnomalyDetection
 
+
 class FillMissingStrategy(ABC):
     @abstractmethod
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -60,9 +61,14 @@ class DataCleansing:
         data = data if data is not None else self.data
         # drop duplicate rows
         data = data.drop_duplicates()
-        # drop columns with same column names
-        data = data.loc[:, ~data.columns.duplicated()]
-
+        # drop columns with same values
+        duplicate_columns = data.columns[data.T.duplicated(keep='first')]
+        print("Dropped columns:", duplicate_columns)
+        data = data.drop(duplicate_columns, axis=1)
+        # for columns with same column names, set an alert
+        if len(data.columns) != len(set(data.columns)):
+            print("Warning: There are columns with same column names")
+        
         return data
 
     
@@ -81,6 +87,8 @@ class DataCleansing:
         '''
         
         data = data if data is not None else self.data
+        # convert "" to NaN
+        data = data.replace(r'^\s*$', np.nan, regex=True)
         # drop rows with missing values in the target_list
         data = data.dropna(subset=target_list)
 
@@ -88,7 +96,6 @@ class DataCleansing:
         dropped_cols = [i for i in data.columns if data[i].isnull().sum() / data.shape[0] > drop_threshold]
         print("Dropped columns:", dropped_cols)
         data = data.drop(columns=dropped_cols)
-
         # fill missing values in the remaining columns
         data = fill_missing_strategy.fill_missing(data)
 
@@ -127,8 +134,12 @@ class DataCleansing:
         '''
 
         data = data if data is not None else self.data
+        # Check missing values
+        if data[col_name].isnull().sum() > 0:
+            print("Missing values detected in %s" % col_name, ", please handle missing values first")
+            return
 
-        z_scores = np.abs(stats.zscore(self.data[col_name]))
+        z_scores = np.abs(stats.zscore(data[col_name]))
         outliers_index_list = np.where(z_scores > threshold)
         print("%d outliers detected" % len(outliers_index_list[0]))
 
@@ -142,3 +153,9 @@ class DataCleansing:
         eda_vis.visualize_outliers(data, col_name, outliers_index_list)
 
         return
+
+
+# df = pd.read_csv('data/Essar_RE_Boilers_B21_sample.csv', parse_dates=True, index_col=0)
+# data_cleansing = DataCleansing(df)
+# df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_strategy=FillMissingByMean())
+# data_cleansing.detect_outliers(df, col_name=df.columns[0], threshold=2.5)
