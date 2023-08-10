@@ -61,7 +61,8 @@ class DataCleansing:
         data = data if data is not None else self.data
         # drop duplicate rows
         data = data.drop_duplicates()
-        # drop columns with same values
+        data = data.reset_index(drop=True)
+        # drop columns with all values be the same
         duplicate_columns = data.columns[data.T.duplicated(keep='first')]
         print("Dropped columns:", duplicate_columns)
         data = data.drop(duplicate_columns, axis=1)
@@ -89,14 +90,16 @@ class DataCleansing:
         data = data if data is not None else self.data
         # convert "" to NaN
         data = data.replace(r'^\s*$', np.nan, regex=True)
+
         # drop rows with missing values in the target_list
         data = data.dropna(subset=target_list)
 
-        # drop columns with missing values more than the threshold
+        # drop columns that have missing values more than the threshold
         dropped_cols = [i for i in data.columns if data[i].isnull().sum() / data.shape[0] > drop_threshold]
         print("Dropped columns:", dropped_cols)
         data = data.drop(columns=dropped_cols)
-        # fill missing values in the remaining columns
+        
+        # fill missing values for the rest of the columns
         data = fill_missing_strategy.fill_missing(data)
 
         return data
@@ -125,7 +128,8 @@ class DataCleansing:
     
     def detect_outliers(self, data: pd.DataFrame = None, col_name: str = None , threshold : float = 3):
         '''
-        Detect and plot outliers for a column in the data
+        Detect and plot outliers for a column in the data based on z-score
+        z-score is a measure of how many standard deviations a data point is away from the mean
 
         Parameters:
         - data: the input data
