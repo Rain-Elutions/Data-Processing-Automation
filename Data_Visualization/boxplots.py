@@ -217,6 +217,11 @@ class BoxPlots:
                                         font=dict(family="Times New Roman", size= 14),
                                         hoverlabel=dict(font_color="floralwhite"),
                                         showlegend=True)
+
+                if ":" in self.col_name1:
+                        self.col_name1 = self.col_name1.replace(":","_")
+                if ":" in self.col_name2:
+                        self.col_name2 = self.col_name2.replace(":","_")
                 plotly.io.write_image(fig, file= './Data_Cleansing/'+ self.target_name +'_anomaly_report/graphics/' + self.col_name1 + self.col_name2 + '.png',format='png', width=1600,height=950)
                 
                 return

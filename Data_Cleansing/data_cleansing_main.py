@@ -45,7 +45,6 @@ class NotFill(FillMissingStrategy):
 class DataCleansing:
     def __init__(self, data: pd.DataFrame = None):
         self.data = data
-        # self.fill_missing_strategy = fill_missing_strategy
     
     def remove_duplicates(self, data: pd.DataFrame) -> pd.DataFrame:
         '''
@@ -73,7 +72,7 @@ class DataCleansing:
         return data
 
     
-    def handle_missing_values(self, data: pd.DataFrame = None, target_list: list = [], drop_threshold: float = 0.5, fill_missing_strategy=FillMissingStrategy) -> pd.DataFrame:
+    def handle_missing_values(self, data: pd.DataFrame = None, target_list: list = [], drop_thresh: float = 0.5, fill_missing_strategy=FillMissingByLastKnownValue) -> pd.DataFrame:
         '''
         Handle missing values in the data
 
@@ -95,7 +94,7 @@ class DataCleansing:
         data = data.dropna(subset=target_list)
 
         # drop columns that have missing values more than the threshold
-        dropped_cols = [i for i in data.columns if data[i].isnull().sum() / data.shape[0] > drop_threshold]
+        dropped_cols = [i for i in data.columns if data[i].isnull().sum() / data.shape[0] > drop_thresh]
         print("Dropped columns:", dropped_cols)
         data = data.drop(columns=dropped_cols)
         
@@ -104,6 +103,29 @@ class DataCleansing:
 
         return data
 
+    def detect_shutdown(self, data: pd.DataFrame = None, shutdown_thresh: float = 0, drop_thresh: float = 0.5) -> pd.DataFrame:
+        '''
+        Detect shutdown period in the time-series data
+
+        Parameters:
+        - data: the data to be cleaned
+        - shutdown_thresh: the value threshold for detecting as a shutdown
+        - drop_thresh: the threshold for dropping columns, if the % of shutdown period is more than this threshold, the column will be dropped
+
+        Returns:
+        - data: the data after detecting shut down
+        '''
+
+        data = data if data is not None else self.data
+
+        # get the % of shutdown period for each column
+        shutdown_percent = data[data <= shutdown_thresh].count() / data.shape[0]
+        # get the columns that have shutdown period more than the threshold
+        dropped_cols = shutdown_percent[shutdown_percent > drop_thresh].index.tolist()
+        print("Dropped columns:", dropped_cols)
+        data = data.drop(columns=dropped_cols)
+
+        return data
     
     def generate_anomaly_report(self, data: pd.DataFrame = None, target_name : str = '', problem_type : str = 'max', manual_input=None, manual_thresh=None):
         '''
@@ -160,6 +182,10 @@ class DataCleansing:
 
 
 # df = pd.read_csv('data/Essar_RE_Boilers_B21_sample.csv', parse_dates=True, index_col=0)
+# generate a df with 50% of values 0
+# df = pd.DataFrame(np.random.randint(0, 2, size=(100, 4)), columns=list('ABCD'))
+# print(df)
 # data_cleansing = DataCleansing(df)
-# df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_strategy=FillMissingByMean())
-# data_cleansing.detect_outliers(df, col_name=df.columns[0], threshold=2.5)
+# # df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_strategy=FillMissingByMean())
+# # data_cleansing.detect_outliers(df, col_name=df.columns[0], threshold=2.5)
+# df = data_cleansing.detect_shutdown(df)

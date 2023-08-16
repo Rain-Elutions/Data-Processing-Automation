@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from category_encoders import TargetEncoder
@@ -5,26 +6,25 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 
-class FeatureEncoding:
+class FeatureEncoding(ABC):
     def __init__(self, data: pd.DataFrame = None, target_name: str = None):
         self.data = data
         self.target_name = target_name
 
-    def get_boolean_columns(self) -> list:
-        '''
-        Get boolean columns from a DataFrame
+    @abstractmethod
+    def get_columns(self) -> list:
+        pass
 
-        Return:
-        - boolean_cols: a list of boolean columns
-        '''
-        boolean_cols = self.data.select_dtypes(include=['bool']).columns.tolist()
-        # delete the target column if it is in the list
-        if self.target_name in boolean_cols:
-            boolean_cols.remove(self.target_name)
+    @abstractmethod
+    def encode(self) -> pd.DataFrame:
+        pass
 
-        return boolean_cols
 
-    def get_categorical_columns(self) -> list:
+class TargetEncoding(FeatureEncoding):
+    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
+        super().__init__(data, target_name)
+
+    def get_columns(self) -> list:
         '''
         Get categorical columns from a DataFrame
 
@@ -39,7 +39,7 @@ class FeatureEncoding:
 
         return categorical_cols
     
-    def target_encoding(self) -> pd.DataFrame:
+    def encode(self) -> pd.DataFrame:
         '''
         Target encoding for categorical columns
 
@@ -48,7 +48,7 @@ class FeatureEncoding:
         '''
 
         data = self.data
-        categorical_cols = self.get_categorical_columns()
+        categorical_cols = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
         X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_name=self.target_name)
@@ -68,11 +68,30 @@ class FeatureEncoding:
         data = pd.concat([X_train, X_val, X_test])
 
         return data
+
+
+class BinaryEncoding(FeatureEncoding):
+    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
+        super().__init__(data, target_name)
     
-    def boolean_encoding(self, col_list: list) -> pd.DataFrame:
+    def get_columns(self) -> list:
         '''
-        Boolean encoding is a categorical encoding technique 
-        where we map the Boolean values to 0 and 1.
+        Get binary columns from a DataFrame
+
+        Return:
+        - binary_cols: a list of binary columns
+        '''
+        binary_cols = self.data.select_dtypes(include=['bool']).columns.tolist()
+        # delete the target column if it is in the list
+        if self.target_name in binary_cols:
+            binary_cols.remove(self.target_name)
+
+        return binary_cols
+
+    def encode(self) -> pd.DataFrame:
+        '''
+        Binary encoding is a categorical encoding technique 
+        where we map the Binary values to 0 and 1.
 
         Parameters:
         - col_list: a list of column names that need to be encoded
@@ -81,12 +100,22 @@ class FeatureEncoding:
         - data: a DataFrame with encoded columns
         '''
         data = self.data
+        col_list = self.get_columns()
         for col in col_list:
             data[col] = data[col].map({True: 1, False: 0})
 
         return data
 
-    def ordinal_encoding(self, col_list: list) -> pd.DataFrame:
+
+class OrdinalEncoding(FeatureEncoding):
+    def __init__(self, data: pd.DataFrame = None, target_name: str = None, col_list: list = []):
+        super().__init__(data, target_name)
+        self.col_list = col_list
+
+    def get_columns(self) -> list:
+        return self.col_list
+    
+    def encode(self) -> pd.DataFrame:
         '''
         Ordinal encoding is a categorical encoding technique that 
         assigns each unique category in a categorical variable with 
@@ -106,18 +135,31 @@ class FeatureEncoding:
 
         # using OrdinalEncoder
         encoder = OrdinalEncoder()
+        col_list = self.get_columns()
         data[col_list] = encoder.fit_transform(data[col_list])
 
         return data
 
 
-class FeatureScaling:
+class FeatureScaling(ABC):
     def __init__(self, data: pd.DataFrame = None, target_name: str = None):
         self.data = data
         self.target_name = target_name
 
-    # apply the same scaling or normalization to validation and test sets that applied to the training set
-    def get_numerical_columns(self) -> list:
+    @abstractmethod
+    def get_columns(self) -> list:
+        pass
+
+    @abstractmethod
+    def scale(self) -> pd.DataFrame:
+        pass
+
+
+class MinMaxScaling(FeatureScaling):
+    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
+        super().__init__(data, target_name)
+
+    def get_columns(self) -> list:
         '''
         Get numerical columns from a DataFrame
 
@@ -131,8 +173,8 @@ class FeatureScaling:
             numerical_cols.remove(self.target_name)
 
         return numerical_cols
-    
-    def min_max_scaling(self) -> pd.DataFrame:
+
+    def scale(self) -> pd.DataFrame:
         '''
         Min-max scaling for numerical columns
 
@@ -141,7 +183,7 @@ class FeatureScaling:
         '''
 
         data = self.data
-        numerical_columns = self.get_numerical_columns()
+        numerical_columns = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
         X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_name=self.target_name)
@@ -161,8 +203,28 @@ class FeatureScaling:
         data = pd.concat([X_train, X_val, X_test])
 
         return data
+
+
+class StandardScaling(FeatureScaling):
+    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
+        super().__init__(data, target_name)
     
-    def standard_scaling(self) -> pd.DataFrame:
+    def get_columns(self) -> list:
+        '''
+        Get numerical columns from a DataFrame
+
+        Return:
+        - numerical_cols: a list of numerical columns
+        '''
+
+        numerical_cols = self.data.select_dtypes(include=['int64', 'float64']).columns.tolist()
+        # delete the target column if it is in the list
+        if self.target_name in numerical_cols:
+            numerical_cols.remove(self.target_name)
+
+        return numerical_cols
+    
+    def scale(self) -> pd.DataFrame:
         '''
         Standard scaling for numerical columns
 
@@ -171,7 +233,7 @@ class FeatureScaling:
         '''
 
         data = self.data
-        numerical_columns = self.get_numerical_columns()
+        numerical_columns = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
         X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_name=self.target_name)
@@ -191,52 +253,6 @@ class FeatureScaling:
         data = pd.concat([X_train, X_val, X_test])
 
         return data
-
-
-class FeatureEngineering:
-    def __init__(self, data: pd.DataFrame = None):
-        self.data = data
-
-    def add_time_lag_features(self, data: pd.DataFrame, target_name: str, max_lag: int = 1) -> pd.DataFrame:
-        '''
-        Add time lag features to a DataFrame
-
-        Parameters:
-        - data: the input DataFrame
-        - max_lag: the max time lag to add
-
-        Return:
-        - data: the DataFrame with time lag features added
-        '''
-
-        data = data if data is not None else self.data
-
-        for time_lag in range(1, max_lag+1):
-            data['time_lag_' + str(time_lag)] = data[target_name].shift(time_lag)
-
-        return data
-    
-    def add_time_features(self, data: pd.DataFrame) -> pd.DataFrame:
-        '''
-        Add time features to a DataFrame
-
-        Parameters:
-        - data: the input DataFrame
-
-        Return:
-        - data: the DataFrame with time features added
-        '''
-
-        data = data if data is not None else self.data
-
-        data['year'] = data.index.year
-        data['month'] = data.index.month
-        data['day'] = data.index.day
-        data['day_of_week'] = data.index.dayofweek
-        data['day_of_year'] = data.index.dayofyear
-        data['week_of_year'] = data.index.weekofyear
-
-        return data
     
 
 class DataPreprocessing:
@@ -246,7 +262,7 @@ class DataPreprocessing:
 
     def feature_encoding(self, data: pd.DataFrame) -> pd.DataFrame:
         '''
-        Feature encoding for boolean and categorical columns (target encoding by default)
+        Feature encoding for binary and categorical columns (target encoding by default)
 
         Parameters:
         - data: the input DataFrame
@@ -257,12 +273,13 @@ class DataPreprocessing:
 
         data = data if data is not None else self.data
 
-        feature_encoding = FeatureEncoding(data, self.target_name)
-        bool_cols = feature_encoding.get_boolean_columns()
-        # categorical_cols = feature_encoding.get_categorical_columns()
-
-        data = feature_encoding.boolean_encoding(bool_cols)
-        data = feature_encoding.target_encoding()
+        # binary encoding
+        be = BinaryEncoding(data, self.target_name)
+        data = be.encode()
+        
+        # target encoding
+        te = TargetEncoding(data, self.target_name)
+        data = te.encode()
 
         return data
 
@@ -279,8 +296,8 @@ class DataPreprocessing:
 
         data = data if data is not None else self.data
 
-        feature_scaling = FeatureScaling(data, self.target_name)
-        data = feature_scaling.min_max_scaling()
+        minmax_scaling = MinMaxScaling(data, self.target_name)
+        data = minmax_scaling.scale()
 
         return data
 
@@ -321,29 +338,3 @@ class DataPreprocessing:
         X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, shuffle=shuffle, random_state=42)
 
         return X_train, X_val, X_test, y_train, y_val, y_test
-
-
-# Test
-if __name__ == '__main__':
-    # Ordinal encoding
-    # data = {
-    #     'Temperature': ['Hot', 'Cold', 'Warm', 'Hot', 'Warm', 'Cold'],
-    #     'Weather': ['Sunny', 'Rainy', 'Cloudy', 'Sunny', 'Cloudy', 'Rainy'],
-    #     'Humidity': ['High', 'Low', 'Medium', 'Medium', 'High', 'Low']
-    # }
-    # df = pd.DataFrame(data=data)
-
-    # feature_encoding = FeatureEncoding(df)
-    # print(feature_encoding.ordinal_encoding(['Temperature', 'Weather', 'Humidity']))
-
-    # Target encoding
-    data = {
-        "City": ["New York", "Los Angeles", "Chicago", "Houston", "Miami", "Toronto", "Vancouver", "London", "Sydney", "Tokyo"],
-        "Country": ["USA", "USA", "USA", "USA", "USA", "Canada", "Canada", "UK", "Australia", "Japan"],
-        "Population": [8623000, 3990456, 2716000, 2320268, 4633470, 2731571, 675218, 8982000, 5312163, 13929286]
-    }
-    df = pd.DataFrame(data)
-
-    feature_encoding = FeatureEncoding(df, target_name='Population')
-    df = feature_encoding.target_encoding()
-    print(df)

@@ -36,11 +36,18 @@ class CorrelationReport:
             self.target_namebottom = list(tag[(len(tag)-5):len(tag)].index)
             corr1 = allrealtions[self.target_nametop+self.target_namebottom].filter(self.target_nametop+self.target_namebottom,axis=0)
             fig = px.imshow(corr1, color_continuous_scale='Blues')
+            
+            if ":" in self.target_name:
+                self.target_name = self.target_name.replace(":","_")
             fig.write_html('./Data_Cleansing/'+ self.target_name +"_anomaly_report/graphics/" + self.target_name + ".html")
             
-
             #merging the top corelations together
             k = len(toprelations.columns)
+            print(toprelations.columns)
             for i in range(0,k):
                 tagcolumncorr = toprelations.iloc[:,i:i+1].sort_values(by=toprelations.columns[i],ascending=False)
-                tagcolumncorr.to_excel('./Data_Cleansing/'+ self.target_name +'_anomaly_report/xlsx/correlations/' + tagcolumncorr.columns[0] +' corr.xlsx')
+                top_col = tagcolumncorr.columns[0]
+                print(top_col)
+                if ":" in top_col:
+                    top_col = top_col.replace(":", "_")
+                tagcolumncorr.to_excel('./Data_Cleansing/'+ self.target_name +'_anomaly_report/xlsx/correlations/' + top_col +' corr.xlsx')

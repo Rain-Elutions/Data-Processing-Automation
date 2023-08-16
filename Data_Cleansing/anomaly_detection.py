@@ -47,7 +47,7 @@ class AnomalyDetection:
             self.manual_input = manual_input
             self.manual_thresh = manual_thresh
 
-        def get_bound(self):
+        def __get_bound(self):
             '''
             Function to automatically get the bounds of the 
             target tag based on problem type
@@ -111,7 +111,7 @@ class AnomalyDetection:
 
             return lower, upper
 
-        def get_anomalies(self):
+        def __get_anomalies(self):
             '''
             Function to seperate the good and bad outputs from 
             each other in a dataset based on a certain threshold
@@ -138,7 +138,7 @@ class AnomalyDetection:
             if type(self.manual_input) == tuple:
                 lower, upper = self.manual_input
             if self.manual_input == None:
-                 lower, upper = self.get_bound()
+                 lower, upper = self.__get_bound()
             else: 
                 print('invalid data type')
             
@@ -194,7 +194,12 @@ class AnomalyDetection:
 
                 base_directory = './Data_Cleansing/'
 
-                new_directory_name, new_directory_path = create_directory_with_numbered_suffix(base_directory, self.target_name + '_anomaly_report')
+                # if the target name has a : in it, replace it with _ when creating the directory
+                target_name = self.target_name
+                if ":" in self.target_name:
+                    target_name = self.target_name.replace(":", "_")
+
+                new_directory_name, new_directory_path = create_directory_with_numbered_suffix(base_directory, target_name + '_anomaly_report')
                 try:
                     os.mkdir(os.path.join(new_directory_path, 'xlsx'))
                     os.mkdir(os.path.join(new_directory_path, 'xlsx', 'correlations'))
@@ -217,13 +222,13 @@ class AnomalyDetection:
                 # separtating into optimal and suboptimal outputs 
                 # filtering the top n most important features 
                 # outputing those to .csvs
-                lower, upper = self.get_bound()
-                optimaloutput, suboptimaloutput = self.get_anomalies()
+                lower, upper = self.__get_bound()
+                optimaloutput, suboptimaloutput = self.__get_anomalies()
                 optimaloutputtop = optimaloutput[topn]
                 suboptimaloutputtop = suboptimaloutput[topn]
 
-                optimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + self.target_name + '_toptagsoptimal.xlsx', index=True)
-                suboptimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + self.target_name + '_toptagssuboptimal.xlsx', index=True)
+                optimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + target_name + '_toptagsoptimal.xlsx', index=True)
+                suboptimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + target_name + '_toptagssuboptimal.xlsx', index=True)
 
                 # making boxplots
                 k = len(optimaloutputtop.columns)-1
@@ -232,7 +237,7 @@ class AnomalyDetection:
                         if i % 2 == 0:
                             optimal = optimaloutputtop.iloc[:,i:i+2]
                             suboptimal = suboptimaloutputtop.iloc[:,i:i+2]
-                            vis = BoxPlots(optimal,suboptimal,self.target_name,optimal.columns[0],optimal.columns[1])
+                            vis = BoxPlots(optimal, suboptimal, target_name, optimal.columns[0], optimal.columns[1])
                             vis.double_boxplot()
                 else:
                     print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
