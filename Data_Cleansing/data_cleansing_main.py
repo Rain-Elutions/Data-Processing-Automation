@@ -10,36 +10,49 @@ from Data_Visualization.eda import EDA_Visualization
 from Data_Cleansing.anomaly_detection import AnomalyDetection
 
 
-class FillMissingStrategy(ABC):
+class FillMissingMethod(ABC):
     @abstractmethod
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         pass
 
-class FillMissingByMean(FillMissingStrategy):
+class FillMissingByMean(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(data.mean())
 
-class FillMissingByMedian(FillMissingStrategy):
+class FillMissingByMedian(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(data.median())
 
-class FillMissingByMode(FillMissingStrategy):
+class FillMissingByMode(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(data.mode().iloc[0])
 
 # Forward fill
-class FillMissingByLastKnownValue(FillMissingStrategy):
+class FillMissingByLastKnownValue(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(method='ffill')
 
 # Backward fill
-class FillMissingByNextKnownValue(FillMissingStrategy):
+class FillMissingByNextKnownValue(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(method='bfill')
     
-class NotFill(FillMissingStrategy):
+class NotFill(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data
+
+def fill_method_factory(method="forward"):
+    """Factory Method"""
+    filler = {
+        "mean": FillMissingByMean(),
+        "median": FillMissingByMedian(),
+        "model": FillMissingByMode(),
+        "forward": FillMissingByLastKnownValue(),
+        "back": FillMissingByNextKnownValue(),
+        "notfill": NotFill()
+    }
+
+    return filler[method]
 
 
 class DataCleansing:
@@ -72,7 +85,7 @@ class DataCleansing:
         return data
 
     
-    def handle_missing_values(self, data: pd.DataFrame = None, target_list: list = [], drop_thresh: float = 0.5, fill_missing_strategy=FillMissingByLastKnownValue) -> pd.DataFrame:
+    def handle_missing_values(self, data: pd.DataFrame = None, target_list: list = [], drop_thresh: float = 0.5, fill_missing_method="forward") -> pd.DataFrame:
         '''
         Handle missing values in the data
 
@@ -80,7 +93,7 @@ class DataCleansing:
         - data: the data to be cleaned
         - target_list: the list of columns to be used as target
         - drop_threshold: the threshold for dropping columns with missing values
-        - fill_missing_strategy: the strategy for filling missing values
+        - fill_missing_method: the method for filling missing values
 
         Returns:
         - data: the data after handling missing values
@@ -91,7 +104,9 @@ class DataCleansing:
         data = data.replace(r'^\s*$', np.nan, regex=True)
 
         # drop rows with missing values in the target_list
+        print("# rows dropped with missing values in the target variable:", data.shape[0] - data.dropna(subset=target_list).shape[0])
         data = data.dropna(subset=target_list)
+
 
         # drop columns that have missing values more than the threshold
         dropped_cols = [i for i in data.columns if data[i].isnull().sum() / data.shape[0] > drop_thresh]
@@ -99,17 +114,21 @@ class DataCleansing:
         data = data.drop(columns=dropped_cols)
         
         # fill missing values for the rest of the columns
-        data = fill_missing_strategy.fill_missing(data)
-
+        try:
+            data = fill_method_factory(fill_missing_method).fill_missing(data)
+            print("Filled missing values using %s" % fill_missing_method)
+        except KeyError:
+            print("Filling failed. Invalid fill missing method, choose from: mean, median, model, forward, back, notfill")
+            
         return data
 
-    def detect_shutdown(self, data: pd.DataFrame = None, shutdown_thresh: float = 0, drop_thresh: float = 0.5) -> pd.DataFrame:
+    def detect_shutdown(self, data: pd.DataFrame = None, manual_shutdown_thresh: float = None, drop_thresh: float = 0.5) -> pd.DataFrame:
         '''
         Detect shutdown period in the time-series data
 
         Parameters:
         - data: the data to be cleaned
-        - shutdown_thresh: the value threshold for detecting as a shutdown
+        - manual_shutdown_thresh: the manually input threshold for detecting as a shutdown, such as 0
         - drop_thresh: the threshold for dropping columns, if the % of shutdown period is more than this threshold, the column will be dropped
 
         Returns:
@@ -118,8 +137,17 @@ class DataCleansing:
 
         data = data if data is not None else self.data
 
+        # get the threshold for shutdown period
+        if manual_shutdown_thresh is None:
+            thresh_list = []
+            for col_name in data.columns:
+                # using z-score to get the lower bound as the threshold
+                thresh_list.append(np.mean(data[col_name]) - 3 * np.std(data[col_name]))
+        else:
+            thresh_list = [manual_shutdown_thresh] * len(data.columns)
+
         # get the % of shutdown period for each column
-        shutdown_percent = data[data <= shutdown_thresh].count() / data.shape[0]
+        shutdown_percent = data[data <= thresh_list].count() / data.shape[0]
         # get the columns that have shutdown period more than the threshold
         dropped_cols = shutdown_percent[shutdown_percent > drop_thresh].index.tolist()
         print("Dropped columns:", dropped_cols)
@@ -182,10 +210,11 @@ class DataCleansing:
 
 
 # df = pd.read_csv('data/Essar_RE_Boilers_B21_sample.csv', parse_dates=True, index_col=0)
+df = pd.read_csv('data/sasol_data_sample.csv', parse_dates=True, index_col=0)
 # generate a df with 50% of values 0
 # df = pd.DataFrame(np.random.randint(0, 2, size=(100, 4)), columns=list('ABCD'))
 # print(df)
-# data_cleansing = DataCleansing(df)
-# # df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_strategy=FillMissingByMean())
+data_cleansing = DataCleansing(df)
+# # df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_method=FillMissingByMean())
 # # data_cleansing.detect_outliers(df, col_name=df.columns[0], threshold=2.5)
-# df = data_cleansing.detect_shutdown(df)
+df = data_cleansing.detect_shutdown(df)
