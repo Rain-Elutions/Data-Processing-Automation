@@ -4,6 +4,9 @@ from sklearn.model_selection import train_test_split
 from category_encoders import TargetEncoder
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from box import Box
+with open('./config.yaml') as f:
+    cfg = Box.from_yaml(f.read())
 
 
 class FeatureEncoding(ABC):
@@ -51,7 +54,7 @@ class TargetEncoding(FeatureEncoding):
         categorical_cols = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
-        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_name=self.target_name)
+        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_list=[self.target_name])
 
         encoder = TargetEncoder()
         encoder.fit(X_train[categorical_cols], y_train)
@@ -59,13 +62,13 @@ class TargetEncoding(FeatureEncoding):
         X_val[categorical_cols] = encoder.transform(X_val[categorical_cols])
         X_test[categorical_cols] = encoder.transform(X_test[categorical_cols])
 
-        # merge X and y back together
-        X_train[self.target_name] = y_train
-        X_val[self.target_name] = y_val
-        X_test[self.target_name] = y_test
+        # Create DataFrames for training, validation, and test sets
+        df_train = pd.concat([X_train, y_train], axis=1)
+        df_val = pd.concat([X_val, y_val], axis=1)
+        df_test = pd.concat([X_test, y_test], axis=1)
 
-        # merge X_train, X_val, X_test back together
-        data = pd.concat([X_train, X_val, X_test])
+        # Concatenate training, validation, and test sets back to the original DataFrame
+        data = pd.concat([df_train, df_val, df_test])
 
         return data
 
@@ -186,7 +189,7 @@ class MinMaxScaling(FeatureScaling):
         numerical_columns = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
-        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_name=self.target_name)
+        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_list=[self.target_name])
 
         scaler = MinMaxScaler()
         scaler.fit(X_train[numerical_columns])
@@ -236,7 +239,7 @@ class StandardScaling(FeatureScaling):
         numerical_columns = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
-        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_name=self.target_name)
+        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_list=[self.target_name])
 
         scaler = StandardScaler()
         scaler.fit(X_train[numerical_columns])
@@ -328,13 +331,39 @@ class DataPreprocessing:
 
         return data
 
-    def data_splitting(self, data: pd.DataFrame = None, target_name: str = '', test_size: float = 0.1, shuffle: bool = False) -> pd.DataFrame:
+    def data_splitting(self, data: pd.DataFrame=None, target_list: list=[]) -> pd.DataFrame:
+        '''
+        Split the data into X/y, training/validation/test sets 
+
+        Parameters:
+        - data: the input DataFrame
+        - target_list: the list of target columns
+
+        Return:
+        - X_train, X_val, X_test, y_train, y_val, y_test, as dataframes, if val is True
+        - X_train, X_test, y_train, y_test, as dataframes, if val is False
+        '''
+        test_size, other_cfg = cfg.data_split.test_size, cfg.data_split.other_config
+
+        if other_cfg.shuffle is False:
+            if other_cfg.stratify is not None:
+                raise ValueError(
+                    "Stratified train/test split is not implemented for shuffle=False"
+                )
+            
         data = data if data is not None else self.data
 
-        X = data.drop(target_name, axis=1)
-        y = data[target_name]
+        X = data.drop(target_list, axis=1)
+        y = data[target_list]
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size*2, shuffle=shuffle, random_state=42)
-        X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, shuffle=shuffle, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size*2, **other_cfg)
+        X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, **other_cfg)
 
         return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+
+
+# df = pd.read_csv('data/raw_data/lng_alldata_1000.csv', parse_dates=True, index_col=0)
+# te = TargetEncoding(df, '3GT1401_3:314FT010.PNT')
+# df = te.encode()

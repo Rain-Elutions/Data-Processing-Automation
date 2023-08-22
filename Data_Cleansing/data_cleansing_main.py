@@ -74,13 +74,17 @@ class DataCleansing:
         # drop duplicate rows
         data = data.drop_duplicates()
         data = data.reset_index(drop=True)
+
         # drop columns with all values be the same
-        duplicate_columns = data.columns[data.T.duplicated(keep='first')]
-        print("Dropped columns:", duplicate_columns)
-        data = data.drop(duplicate_columns, axis=1)
-        # for columns with same column names, set an alert
+        # duplicate_columns = data.columns[data.T.duplicated(keep='first')]
+        # print("Dropped columns:", duplicate_columns)
+        # data = data.drop(duplicate_columns, axis=1)
+
+        # for columns with same column names, set an alert and keep the first one
         if len(data.columns) != len(set(data.columns)):
-            print("Warning: There are columns with same column names")
+            print("Warning: There are columns with same column names, we have kept the first one and drop the rest")
+            print("Dropped columns:", data.columns[data.columns.duplicated()])
+            data = data.loc[:, ~data.columns.duplicated()]
         
         return data
 
@@ -210,11 +214,11 @@ class DataCleansing:
 
 
 # df = pd.read_csv('data/Essar_RE_Boilers_B21_sample.csv', parse_dates=True, index_col=0)
-df = pd.read_csv('data/sasol_data_sample.csv', parse_dates=True, index_col=0)
+# df = pd.read_csv('data/sasol_data_sample.csv', parse_dates=True, index_col=0)
 # generate a df with 50% of values 0
 # df = pd.DataFrame(np.random.randint(0, 2, size=(100, 4)), columns=list('ABCD'))
 # print(df)
-data_cleansing = DataCleansing(df)
-# # df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_method=FillMissingByMean())
-# # data_cleansing.detect_outliers(df, col_name=df.columns[0], threshold=2.5)
-df = data_cleansing.detect_shutdown(df)
+# data_cleansing = DataCleansing(df)
+# df = data_cleansing.handle_missing_values(df, target_list=[], drop_threshold=0.5, fill_missing_method=FillMissingByMean())
+# data_cleansing.detect_outliers(df, col_name=df.columns[0], threshold=2.5)
+# df = data_cleansing.detect_shutdown(df)
