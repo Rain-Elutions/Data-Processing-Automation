@@ -37,6 +37,11 @@ class FillMissingByNextKnownValue(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data.fillna(method='bfill')
     
+# Interpolation Fill
+class FillMissingByInterpolation(FillMissingMethod):
+    def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
+        return data.interpolate(method='linear', limit_direction='both')
+    
 class NotFill(FillMissingMethod):
     def fill_missing(self, data: pd.DataFrame) -> pd.DataFrame:
         return data
