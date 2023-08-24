@@ -5,6 +5,22 @@ import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
+
+def barChart(x_list: list, y_list: list, title: str, x_label: str, y_label: str):
+        fig = px.bar(x=x_list, y=y_list, title=title)
+        fig.update_layout(
+                xaxis_title=x_label,
+                yaxis_title=y_label,
+                font=dict(
+                family="Courier New, monospace",
+                size=18,
+                color="#7f7f7f"
+                )
+        )
+        fig.show()
+        return
+
+
 class BoxPlots:
         def __init__(self,df1: pd.DataFrame,df2: pd.DataFrame,target_name: str = '', col_name1 = '',col_name2=''):
                 self.df1 = df1
