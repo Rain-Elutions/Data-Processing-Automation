@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from category_encoders import TargetEncoder
@@ -8,12 +9,14 @@ from box import Box
 with open('./config.yaml') as f:
     cfg = Box.from_yaml(f.read())
 
-
-class FeatureEncoding(ABC):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
+# all classes share same instance attributes
+class SharedInit:
+    def __init__(self, data: pd.DataFrame=None, target_list: List[str]=None):
         self.data = data
-        self.target_name = target_name
+        self.target_list = target_list
 
+
+class FeatureEncoding(ABC, SharedInit):
     @abstractmethod
     def get_columns(self) -> list:
         pass
@@ -24,9 +27,6 @@ class FeatureEncoding(ABC):
 
 
 class TargetEncoding(FeatureEncoding):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
-        super().__init__(data, target_name)
-
     def get_columns(self) -> list:
         '''
         Get categorical columns from a DataFrame
@@ -37,8 +37,9 @@ class TargetEncoding(FeatureEncoding):
 
         categorical_cols = self.data.select_dtypes(include=['object']).columns.tolist()
         # delete the target column if it is in the list
-        if self.target_name in categorical_cols:
-            categorical_cols.remove(self.target_name)
+        for col in self.target_list:
+            if col in categorical_cols:
+                categorical_cols.remove(col)
 
         return categorical_cols
     
@@ -50,11 +51,10 @@ class TargetEncoding(FeatureEncoding):
         - data: a DataFrame with categorical columns encoded by target encoding
         '''
 
-        data = self.data
         categorical_cols = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
-        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_list=[self.target_name])
+        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(self.data, self.target_list)
 
         encoder = TargetEncoder()
         encoder.fit(X_train[categorical_cols], y_train)
@@ -68,15 +68,12 @@ class TargetEncoding(FeatureEncoding):
         df_test = pd.concat([X_test, y_test], axis=1)
 
         # Concatenate training, validation, and test sets back to the original DataFrame
-        data = pd.concat([df_train, df_val, df_test])
+        self.data = pd.concat([df_train, df_val, df_test])
 
-        return data
+        return self.data
 
 
 class BinaryEncoding(FeatureEncoding):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
-        super().__init__(data, target_name)
-    
     def get_columns(self) -> list:
         '''
         Get binary columns from a DataFrame
@@ -86,15 +83,16 @@ class BinaryEncoding(FeatureEncoding):
         '''
         binary_cols = self.data.select_dtypes(include=['bool']).columns.tolist()
         # delete the target column if it is in the list
-        if self.target_name in binary_cols:
-            binary_cols.remove(self.target_name)
+        for col in self.target_list:
+            if col in binary_cols:
+                binary_cols.remove(col)
 
         return binary_cols
 
     def encode(self) -> pd.DataFrame:
         '''
         Binary encoding is a categorical encoding technique 
-        where we map the Binary values to 0 and 1.
+        where we map the Boolean values to 0 and 1.
 
         Parameters:
         - col_list: a list of column names that need to be encoded
@@ -102,17 +100,17 @@ class BinaryEncoding(FeatureEncoding):
         Return:
         - data: a DataFrame with encoded columns
         '''
-        data = self.data
+
         col_list = self.get_columns()
         for col in col_list:
-            data[col] = data[col].map({True: 1, False: 0})
+            self.data[col] = self.data[col].map({True: 1, False: 0})
 
-        return data
+        return self.data
 
 
 class OrdinalEncoding(FeatureEncoding):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None, col_list: list = []):
-        super().__init__(data, target_name)
+    def __init__(self, data: pd.DataFrame, target_list: List[str], col_list: list = []):
+        super().__init__(data, target_list)
         self.col_list = col_list
 
     def get_columns(self) -> list:
@@ -130,7 +128,7 @@ class OrdinalEncoding(FeatureEncoding):
         Return:
         - data: a DataFrame with encoded columns
         '''
-        data = self.data
+
         # using .cat.codes
         # for col in col_list:
         #     data[col] = data[col].astype('category')
@@ -139,29 +137,12 @@ class OrdinalEncoding(FeatureEncoding):
         # using OrdinalEncoder
         encoder = OrdinalEncoder()
         col_list = self.get_columns()
-        data[col_list] = encoder.fit_transform(data[col_list])
+        self.data[col_list] = encoder.fit_transform(self.data[col_list])
 
-        return data
-
-
-class FeatureScaling(ABC):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
-        self.data = data
-        self.target_name = target_name
-
-    @abstractmethod
-    def get_columns(self) -> list:
-        pass
-
-    @abstractmethod
-    def scale(self) -> pd.DataFrame:
-        pass
+        return self.data
 
 
-class MinMaxScaling(FeatureScaling):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
-        super().__init__(data, target_name)
-
+class FeatureScaling(SharedInit):
     def get_columns(self) -> list:
         '''
         Get numerical columns from a DataFrame
@@ -172,98 +153,50 @@ class MinMaxScaling(FeatureScaling):
 
         numerical_cols = self.data.select_dtypes(include=['int64', 'float64']).columns.tolist()
         # delete the target column if it is in the list
-        if self.target_name in numerical_cols:
-            numerical_cols.remove(self.target_name)
+        for col in self.target_list:
+            if col in numerical_cols:
+                numerical_cols.remove(col)
 
         return numerical_cols
 
-    def scale(self) -> pd.DataFrame:
+    def scale(self, method: str="minmax") -> pd.DataFrame:
         '''
-        Min-max scaling for numerical columns
+        Min-max or standard scaling for numerical columns
 
         Return:
-        - data: a DataFrame with numerical columns scaled by min-max scaling
+        - data: a DataFrame with numerical columns scaled by min-max scaling or standard scaling
         '''
 
-        data = self.data
         numerical_columns = self.get_columns()
 
         data_preprocessing = DataPreprocessing()
-        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_list=[self.target_name])
+        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(self.data, target_list=self.target_list)
 
-        scaler = MinMaxScaler()
+        if method == "minmax":
+            scaler = MinMaxScaler()
+        elif method == "standard":
+            scaler = StandardScaler()
+        else:
+            raise ValueError("Invalid method! Choose from: minmax, standard")
+
         scaler.fit(X_train[numerical_columns])
         X_train[numerical_columns] = scaler.transform(X_train[numerical_columns])
         X_val[numerical_columns] = scaler.transform(X_val[numerical_columns])
         X_test[numerical_columns] = scaler.transform(X_test[numerical_columns])
 
         # merge X and y back together
-        X_train[self.target_name] = y_train
-        X_val[self.target_name] = y_val
-        X_test[self.target_name] = y_test
+        X_train[self.target_list] = y_train
+        X_val[self.target_list] = y_val
+        X_test[self.target_list] = y_test
 
         # merge X_train, X_val, X_test back together
-        data = pd.concat([X_train, X_val, X_test])
+        self.data = pd.concat([X_train, X_val, X_test])
 
-        return data
+        return self.data
 
 
-class StandardScaling(FeatureScaling):
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
-        super().__init__(data, target_name)
-    
-    def get_columns(self) -> list:
-        '''
-        Get numerical columns from a DataFrame
-
-        Return:
-        - numerical_cols: a list of numerical columns
-        '''
-
-        numerical_cols = self.data.select_dtypes(include=['int64', 'float64']).columns.tolist()
-        # delete the target column if it is in the list
-        if self.target_name in numerical_cols:
-            numerical_cols.remove(self.target_name)
-
-        return numerical_cols
-    
-    def scale(self) -> pd.DataFrame:
-        '''
-        Standard scaling for numerical columns
-
-        Return:
-        - data: a DataFrame with numerical columns scaled by standard scaling
-        '''
-
-        data = self.data
-        numerical_columns = self.get_columns()
-
-        data_preprocessing = DataPreprocessing()
-        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(data, target_list=[self.target_name])
-
-        scaler = StandardScaler()
-        scaler.fit(X_train[numerical_columns])
-        X_train[numerical_columns] = scaler.transform(X_train[numerical_columns])
-        X_val[numerical_columns] = scaler.transform(X_val[numerical_columns])
-        X_test[numerical_columns] = scaler.transform(X_test[numerical_columns])
-
-        # merge X and y back together
-        X_train[self.target_name] = y_train
-        X_val[self.target_name] = y_val
-        X_test[self.target_name] = y_test
-
-        # merge X_train, X_val, X_test back together
-        data = pd.concat([X_train, X_val, X_test])
-
-        return data
-    
-
-class DataPreprocessing:
-    def __init__(self, data: pd.DataFrame = None, target_name: str = None):
-        self.data = data
-        self.target_name = target_name
-
-    def feature_encoding(self, data: pd.DataFrame) -> pd.DataFrame:
+class DataPreprocessing(SharedInit):
+    def feature_encoding(self, data: pd.DataFrame=None) -> pd.DataFrame:
         '''
         Feature encoding for binary and categorical columns (target encoding by default)
 
@@ -277,16 +210,25 @@ class DataPreprocessing:
         data = data if data is not None else self.data
 
         # binary encoding
-        be = BinaryEncoding(data, self.target_name)
+        be = BinaryEncoding(data, self.target_list)
         data = be.encode()
         
         # target encoding
-        te = TargetEncoding(data, self.target_name)
-        data = te.encode()
-
+        if len(self.target_list) == 1:
+            te = TargetEncoding(data, self.target_list)
+            data = te.encode()
+        # ordinal encoding
+        else:
+            categorical_cols = data.select_dtypes(include=['object']).columns.tolist()
+            for col in self.target_list:
+                if col in categorical_cols:
+                    categorical_cols.remove(col)
+            oe = OrdinalEncoding(data, self.target_list, col_list=categorical_cols)
+            data = oe.encode()
+        
         return data
 
-    def feature_scaling(self, data: pd.DataFrame) -> pd.DataFrame:
+    def feature_scaling(self, data: pd.DataFrame=None) -> pd.DataFrame:
         '''
         Feature scaling for numerical columns (min-max scaling by default)
 
@@ -299,12 +241,12 @@ class DataPreprocessing:
 
         data = data if data is not None else self.data
 
-        minmax_scaling = MinMaxScaling(data, self.target_name)
-        data = minmax_scaling.scale()
+        minmax_scaling = FeatureScaling(data, self.target_list)
+        data = minmax_scaling.scale(method="minmax")
 
         return data
 
-    def data_resampling(self, data: pd.DataFrame, frequency: str) -> pd.DataFrame:
+    def data_resampling(self, data: pd.DataFrame=None, frequency: str='') -> pd.DataFrame:
         '''
         Data resampling for time series data
 
@@ -331,7 +273,8 @@ class DataPreprocessing:
 
         return data
 
-    def data_splitting(self, data: pd.DataFrame=None, target_list: list=[]) -> pd.DataFrame:
+
+    def data_splitting(self, data: pd.DataFrame=None, target_list: List[str]=[]) -> pd.DataFrame:
         '''
         Split the data into X/y, training/validation/test sets 
 
@@ -340,8 +283,7 @@ class DataPreprocessing:
         - target_list: the list of target columns
 
         Return:
-        - X_train, X_val, X_test, y_train, y_val, y_test, as dataframes, if val is True
-        - X_train, X_test, y_train, y_test, as dataframes, if val is False
+        - X_train, X_val, X_test, y_train, y_val, y_test, as dataframes
         '''
         test_size, other_cfg = cfg.data_split.test_size, cfg.data_split.other_config
 
@@ -352,7 +294,8 @@ class DataPreprocessing:
                 )
             
         data = data if data is not None else self.data
-
+        target_list = target_list if target_list != [] else self.target_list
+        
         X = data.drop(target_list, axis=1)
         y = data[target_list]
 
@@ -365,5 +308,8 @@ class DataPreprocessing:
 
 
 # df = pd.read_csv('data/raw_data/lng_alldata_1000.csv', parse_dates=True, index_col=0)
-# te = TargetEncoding(df, '3GT1401_3:314FT010.PNT')
-# df = te.encode()
+# # te = TargetEncoding(df, '3GT1401_3:314FT010.PNT')
+# # df = te.encode()
+# dp = DataPreprocessing(df, ['3GT1401_3:314FT010.PNT', df.columns[-1]])
+# df = dp.feature_encoding(df)
+# print(df)
