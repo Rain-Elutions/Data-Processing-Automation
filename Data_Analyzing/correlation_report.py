@@ -7,6 +7,20 @@ class CorrelationReport:
          self.topn = topn
          self.target_name = target_name
     
+    def get_redundant_pairs(self):
+         pairs_to_drop =set()
+         cols = self.df.columns
+         for i in range(0,self.df.shape[1]):
+            for j in range(0,i+1):
+                pairs_to_drop.add((cols[i],cols[j]))
+         return pairs_to_drop
+    
+    def get_correlations(self):
+         au_corr = self.df.corr().unstack()
+         labels_to_drop = self.get_redundant_pairs(self.df)
+         au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
+         return au_corr
+              
     def correlations(self):
             '''
             Function to create correlation csvs

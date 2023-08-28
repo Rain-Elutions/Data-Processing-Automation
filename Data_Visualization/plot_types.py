@@ -20,6 +20,28 @@ def barChart(x_list: list, y_list: list, title: str, x_label: str, y_label: str)
         fig.show()
         return
 
+def corrBar(data):
+        fig = px.bar(data, y=data.index, color=data.values,
+             color_continuous_scale='RdYlGn',
+             labels={'x': 'Correlation', 'y': 'Features'},
+             title='Correlation Plot')
+
+        fig.update_layout(height=600, width=900)
+        fig.show()
+        return
+
+def heatMap(data,mask: float = 0.5):
+        corr = data
+        mask = corr > mask
+        go.Heatmap(
+        z=corr.mask(mask),
+        x=corr.columns,
+        y=corr.columns,
+        colorscale=px.colors.diverging.RdBu,
+        zmin=-1,
+        zmax=1
+        )
+        return
 
 class BoxPlots:
         def __init__(self,df1: pd.DataFrame,df2: pd.DataFrame,target_name: str = '', col_name1 = '',col_name2=''):

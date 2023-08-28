@@ -2,15 +2,20 @@ import pandas as pd
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from Data_Visualization.plot_types import barChart
+from Data_Visualization.plot_types import barChart,corrBar,heatMap
+from correlation_report import get_correlations
 
 class DataAnalysis:
     def __init__(self, data: pd.DataFrame = None, target_name: str = None):
         self.data = data
         self.target_name = target_name
+    def correlation_analysis(self,thresh:float = 0.5):
+        corrplot = get_correlations(self.data)
+        # corrplot.to_xlsx('./Data_Analyzing/')  #Place Holder
+        corrBar(corrplot)
+        heatMap(corrplot,thresh)
 
-    def correlation_analysis(self):
-        pass
+        return corrplot
 
     def variance_analysis(self, data: pd.DataFrame = None):
         '''
