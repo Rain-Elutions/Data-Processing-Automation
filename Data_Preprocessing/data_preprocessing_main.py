@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Protocol
 from typing import List
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -9,24 +10,58 @@ from box import Box
 with open('./config.yaml') as f:
     cfg = Box.from_yaml(f.read())
 
+
 # all classes share same instance attributes
+@dataclass
 class SharedInit:
-    def __init__(self, data: pd.DataFrame=None, target_list: List[str]=None):
-        self.data = data
-        self.target_list = target_list
+    data: pd.DataFrame = None
+    target_list: List[str] = None
 
 
-class FeatureEncoding(ABC, SharedInit):
-    @abstractmethod
+class FeatureEncoding(Protocol):
     def get_columns(self) -> list:
-        pass
+        ...
 
-    @abstractmethod
     def encode(self) -> pd.DataFrame:
-        pass
+        ...
 
 
-class TargetEncoding(FeatureEncoding):
+class BinaryEncoding(SharedInit):
+    def get_columns(self) -> list:
+        '''
+        Get binary columns from a DataFrame
+
+        Return:
+        - binary_cols: a list of binary columns
+        '''
+        binary_cols = self.data.select_dtypes(include=['bool']).columns.tolist()
+        # delete the target column if it is in the list
+        for col in self.target_list:
+            if col in binary_cols:
+                binary_cols.remove(col)
+
+        return binary_cols
+
+    def encode(self) -> pd.DataFrame:
+        '''
+        Binary encoding is a categorical encoding technique 
+        where we map the Boolean values to 0 and 1.
+
+        Parameters:
+        - col_list: a list of column names that need to be encoded
+
+        Return:
+        - data: a DataFrame with encoded columns
+        '''
+
+        col_list = self.get_columns()
+        for col in col_list:
+            self.data[col] = self.data[col].map({True: 1, False: 0})
+
+        return self.data
+    
+
+class TargetEncoding(SharedInit):
     def get_columns(self) -> list:
         '''
         Get categorical columns from a DataFrame
@@ -73,48 +108,22 @@ class TargetEncoding(FeatureEncoding):
         return self.data
 
 
-class BinaryEncoding(FeatureEncoding):
+class OrdinalEncoding(SharedInit):
     def get_columns(self) -> list:
         '''
-        Get binary columns from a DataFrame
+        Get categorical columns from a DataFrame
 
         Return:
-        - binary_cols: a list of binary columns
+        - categorical_cols: a list of categorical columns
         '''
-        binary_cols = self.data.select_dtypes(include=['bool']).columns.tolist()
+
+        categorical_cols = self.data.select_dtypes(include=['object']).columns.tolist()
         # delete the target column if it is in the list
         for col in self.target_list:
-            if col in binary_cols:
-                binary_cols.remove(col)
+            if col in categorical_cols:
+                categorical_cols.remove(col)
 
-        return binary_cols
-
-    def encode(self) -> pd.DataFrame:
-        '''
-        Binary encoding is a categorical encoding technique 
-        where we map the Boolean values to 0 and 1.
-
-        Parameters:
-        - col_list: a list of column names that need to be encoded
-
-        Return:
-        - data: a DataFrame with encoded columns
-        '''
-
-        col_list = self.get_columns()
-        for col in col_list:
-            self.data[col] = self.data[col].map({True: 1, False: 0})
-
-        return self.data
-
-
-class OrdinalEncoding(FeatureEncoding):
-    def __init__(self, data: pd.DataFrame, target_list: List[str], col_list: list = []):
-        super().__init__(data, target_list)
-        self.col_list = col_list
-
-    def get_columns(self) -> list:
-        return self.col_list
+        return categorical_cols
     
     def encode(self) -> pd.DataFrame:
         '''
@@ -163,6 +172,9 @@ class FeatureScaling(SharedInit):
         '''
         Min-max or standard scaling for numerical columns
 
+        Parameters:
+        - method: the scaling method, minmax or standard
+
         Return:
         - data: a DataFrame with numerical columns scaled by min-max scaling or standard scaling
         '''
@@ -196,7 +208,8 @@ class FeatureScaling(SharedInit):
 
 
 class DataPreprocessing(SharedInit):
-    def feature_encoding(self, data: pd.DataFrame=None) -> pd.DataFrame:
+    # using protocol to define the interface
+    def feature_encoding(self, data: pd.DataFrame=None, method: FeatureEncoding=TargetEncoding) -> pd.DataFrame:
         '''
         Feature encoding for binary and categorical columns (target encoding by default)
 
@@ -213,18 +226,9 @@ class DataPreprocessing(SharedInit):
         be = BinaryEncoding(data, self.target_list)
         data = be.encode()
         
-        # target encoding
-        if len(self.target_list) == 1:
-            te = TargetEncoding(data, self.target_list)
-            data = te.encode()
-        # ordinal encoding
-        else:
-            categorical_cols = data.select_dtypes(include=['object']).columns.tolist()
-            for col in self.target_list:
-                if col in categorical_cols:
-                    categorical_cols.remove(col)
-            oe = OrdinalEncoding(data, self.target_list, col_list=categorical_cols)
-            data = oe.encode()
+        method = TargetEncoding if len(self.target_list) == 1 else OrdinalEncoding
+        encoder = method(data, self.target_list)
+        data = encoder.encode()
         
         return data
 
