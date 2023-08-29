@@ -85,7 +85,7 @@ class CorrelationReport:
          mic_matrix = calculate_MIC_matrix(df)
 
          # Export the MIC matrix to a CSV file
-         mic_matrix.to_csv('mic_matrix.csv')
+         mic_matrix.to_csv('./mic_matrix.csv')
 
          print("MIC Matrix:")
          print(mic_matrix)
