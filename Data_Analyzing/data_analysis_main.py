@@ -3,17 +3,28 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Data_Visualization.plot_types import barChart,corrBar,heatMap
-from correlation_report import get_correlations
+from correlation_analysis import CorrelationTypes
 
 class DataAnalysis:
     def __init__(self, data: pd.DataFrame = None, target_name: str = None):
         self.data = data
         self.target_name = target_name
+
     def correlation_analysis(self,thresh:float = 0.5):
-        corrplot = get_correlations(self.data)
+        '''
+        Calculate the correlations of each column for linear and non linear relations
+
+        Parameters:
+        -data: the input Dataframe
+        -thresh: the threshold for correlations to include in the heatmap
+        
+        '''
+        p = CorrelationTypes(self.data)
+        corrplot = p.get_correlations()
         # corrplot.to_xlsx('./Data_Analyzing/')  #Place Holder
         corrBar(corrplot)
         heatMap(corrplot,thresh)
+        p.non_linear()
 
         return corrplot
 

@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 import numpy as np
 from Data_Visualization.plot_types import BoxPlots
-from Data_Analyzing.correlation_report import CorrelationReport
+from Data_Analyzing.correlation_analysis import CorrelationTypes
 from Data_Analyzing.feature_selection import FeatureSelection
 
 
@@ -243,8 +243,8 @@ class AnomalyDetection:
                     print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
                 
                 #creating correlation csvs
-                corr = CorrelationReport(self.df, topn, self.target_name)
-                corr.correlations()
+                corr = CorrelationTypes(self.df, topn, self.target_name)
+                corr.top_correlations()
 
 
                 # Making Basic Stats for IES

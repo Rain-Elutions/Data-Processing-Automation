@@ -5,7 +5,7 @@ from minepy import MINE
 from sklearn.feature_selection import mutual_info_regression
 from scipy.spatial.distance import correlation
 
-class CorrelationReport:
+class CorrelationTypes:
     def __init__(self, data, topn, target_name):
          self.df = data
          self.topn = topn
@@ -90,7 +90,7 @@ class CorrelationReport:
          print("MIC Matrix:")
          print(mic_matrix)
 
-    def correlations(self):
+    def top_correlations(self):
             '''
             Function to create correlation csvs
             for the top 10 important features
