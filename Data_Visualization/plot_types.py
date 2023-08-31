@@ -30,17 +30,22 @@ def corrBar(data):
         fig.show()
         return
 
-def heatMap(data,mask: float = 0.5):
+def heatMap(data,mask: float = 0.5,settitle:str=''):
         corr = data
         mask = corr > mask
-        go.Heatmap(
+        fig = go.Figure(go.Heatmap(
         z=corr.mask(mask),
         x=corr.columns,
         y=corr.columns,
         colorscale=px.colors.diverging.RdBu,
         zmin=-1,
         zmax=1
+        ))
+        fig.update_layout(
+                title = settitle,
+                title_x=0.5
         )
+        fig.show()
         return
 
 class BoxPlots:

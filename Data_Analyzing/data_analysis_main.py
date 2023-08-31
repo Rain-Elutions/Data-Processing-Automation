@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Data_Visualization.plot_types import barChart,corrBar,heatMap
-from correlation_analysis import CorrelationTypes
+from Data_Analyzing.correlation_analysis import CorrelationTypes
 
 class DataAnalysis:
     def __init__(self, data: pd.DataFrame = None, target_name: str = None):
@@ -19,14 +19,15 @@ class DataAnalysis:
         -thresh: the threshold for correlations to include in the heatmap
         
         '''
-        p = CorrelationTypes(self.data)
+        p = CorrelationTypes(self.data,10,self.target_name)
         corrplot = p.get_correlations()
-        # corrplot.to_xlsx('./Data_Analyzing/')  #Place Holder
-        corrBar(corrplot)
-        heatMap(corrplot,thresh)
-        p.non_linear()
-
-        return corrplot
+        corrplot.to_csv('./Data_Analyzing/test.csv')  #Place Holder
+        #corrBar(corrplot)
+        heatMap(corrplot,thresh,'Correlation')
+        MI,spearman = p.non_linear()
+        heatMap(MI,thresh,'Mutual Information')
+        heatMap(spearman,thresh,'Spearman Correlation')
+        return 
 
     def variance_analysis(self, data: pd.DataFrame = None):
         '''
