@@ -1,23 +1,15 @@
 from dataclasses import dataclass
-from typing import Protocol
-from typing import List
+from typing import Protocol, List
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from category_encoders import TargetEncoder
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import OrdinalEncoder, StandardScaler, MinMaxScaler
 from box import Box
 with open('./config.yaml') as f:
     cfg = Box.from_yaml(f.read())
 
 
-# all classes share same instance attributes
-@dataclass
-class SharedInit:
-    data: pd.DataFrame = None
-    target_list: List[str] = None
-
-
+# can also use ABC instead of Protocol here
 class FeatureEncoding(Protocol):
     def get_columns(self) -> list:
         ...
@@ -26,7 +18,11 @@ class FeatureEncoding(Protocol):
         ...
 
 
-class BinaryEncoding(SharedInit):
+class BinaryEncoding:
+    def __init__(self, data: pd.DataFrame = None, target_list: List[str] = None):
+        self.data = data
+        self.target_list = target_list
+
     def get_columns(self) -> list:
         '''
         Get binary columns from a DataFrame
@@ -61,7 +57,11 @@ class BinaryEncoding(SharedInit):
         return self.data
     
 
-class TargetEncoding(SharedInit):
+class TargetEncoding():
+    def __init__(self, data: pd.DataFrame = None, target_list: List[str] = None):
+        self.data = data
+        self.target_list = target_list
+
     def get_columns(self) -> list:
         '''
         Get categorical columns from a DataFrame
@@ -108,7 +108,11 @@ class TargetEncoding(SharedInit):
         return self.data
 
 
-class OrdinalEncoding(SharedInit):
+class OrdinalEncoding():
+    def __init__(self, data: pd.DataFrame = None, target_list: List[str] = None):
+        self.data = data
+        self.target_list = target_list
+
     def get_columns(self) -> list:
         '''
         Get categorical columns from a DataFrame
@@ -151,7 +155,11 @@ class OrdinalEncoding(SharedInit):
         return self.data
 
 
-class FeatureScaling(SharedInit):
+class FeatureScaling():
+    def __init__(self, data: pd.DataFrame = None, target_list: List[str] = None):
+        self.data = data
+        self.target_list = target_list
+
     def get_columns(self) -> list:
         '''
         Get numerical columns from a DataFrame
@@ -207,7 +215,11 @@ class FeatureScaling(SharedInit):
         return self.data
 
 
-class DataPreprocessing(SharedInit):
+class DataPreprocessing():
+    def __init__(self, data: pd.DataFrame = None, target_list: List[str] = None):
+        self.data = data
+        self.target_list = target_list
+
     # using protocol to define the interface
     def feature_encoding(self, data: pd.DataFrame=None, method: FeatureEncoding=TargetEncoding) -> pd.DataFrame:
         '''
