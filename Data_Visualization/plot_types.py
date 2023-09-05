@@ -11,11 +11,6 @@ def barChart(x_list: list, y_list: list, title: str, x_label: str, y_label: str)
         fig.update_layout(
                 xaxis_title=x_label,
                 yaxis_title=y_label,
-                font=dict(
-                family="Courier New, monospace",
-                size=18,
-                color="#7f7f7f"
-                )
         )
         fig.show()
         return

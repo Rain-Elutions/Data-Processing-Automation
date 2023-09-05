@@ -40,10 +40,10 @@ class DataAnalysis:
 
         data = self.data if data is None else data
 
-        norm_std = self.data.std() / abs(self.data.mean() + 1e-6)
+        norm_std = data.std() / abs(data.mean() + 1e-6)
         norm_std = norm_std.sort_values(ascending=False)
         # visualize
-        barChart(x=norm_std.index, y=norm_std.values, title="Norm STD of each column", x_label="Column Name", y_label="Norm STD")
+        barChart(x_list=norm_std.index, y_list=norm_std.values, title="Norm STD of each column", x_label="Column Name", y_label="Norm STD")
 
         return
     
