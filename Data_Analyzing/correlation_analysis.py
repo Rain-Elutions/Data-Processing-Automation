@@ -29,10 +29,8 @@ class CorrelationTypes:
          
          def calculate_MI(df: pd.DataFrame) -> pd.Series:
             mi_values = []
-            
             for col1 in df.columns:
                 mi_row = []
-                
                 for col2 in df.columns:
                     v1 = np.array(df[col1])
                     v2 = np.array(df[col2])
@@ -43,9 +41,13 @@ class CorrelationTypes:
             
             mi_matrix = pd.DataFrame(mi_values, columns=df.columns, index=df.columns).dropna(how='all').dropna(axis=1,how='all')
             return mi_matrix
-         df = self.df.select_dtypes(include=np.number)
-         spearmancorr = df.corr(method='spearman').dropna(how='all').dropna(axis=1,how='all')
+         df = self.df
+
+         # Calculate the mean for numeric columns
+         numeric_columns = df.select_dtypes(include=[np.number]).columns
+         spearmancorr = df[numeric_columns].corr(method='spearman').dropna(how='all').dropna(axis=1,how='all')
          # Calculate mutual information matrix
+         df = df[numeric_columns].dropna(axis=1,how='all')
          mi_matrix = calculate_MI(df)
 
          # Export the mutual information matrix to a CSV file
