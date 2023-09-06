@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from Data_Visualization.plot_types import barChart,corrBar,heatMap
+from Data_Visualization.plot_types import barChart, corrBar, heatMap
 from Data_Analyzing.correlation_analysis import CorrelationTypes
 
 class DataAnalysis:

@@ -4,13 +4,36 @@ from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
 from xgboost import XGBRegressor
 from BorutaShap import BorutaShap
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Data_Visualization.eda import EDA_Visualization
+
 
 class FeatureSelection:
+    '''
+    Feature selection class
+
+    Parameters:
+    - data: the input DataFrame
+    - target_name: the name of the target column
+    '''
     def __init__(self, data,target_name):
         self.data = data
         self.target_name = target_name
 
     def correlation_selection(self, threshold: float=.5):
+        '''
+        feature selection based on correlation to target
+
+        Parameters:
+        - threshold: the threshold of correlation to be selected
+
+        Returns:
+        - high_cor_cols: the columns with correlation to target greater than threshold
+
+        '''
+
         # threshold being .5 comes from IES
         corr_matrix = self.data.corr()
         # get columns with correlation to target greater than threshold
@@ -21,9 +44,21 @@ class FeatureSelection:
 
         return high_cor_cols
 
-    def dummy_feature_importance(self, iter: int = 20, select_num: int = None):
+    def dummy_feature_importance(self, select_num: int = None, iter: int = 20):
+        '''
+        Feature selection based on dummy feature importance, get from XGBoost
+
+        Parameters:
+        - select_num: the number of features to be selected
+        - iter: the number of iterations to get the average feature importance
+
+        Returns:
+        - selected_feats: the selected features
+        - data: the data with selected features
+        '''
         feat_importance_dict = {col: 0 for col in self.data.columns}
         feat_importance_dict['dummy'] = 0
+        feat_importance_dict.pop(self.target_name)
 
         # iterate to get the average feature importance using XBRegressor
         y = self.data[self.target_name]
@@ -43,6 +78,9 @@ class FeatureSelection:
 
         for feat in feat_importance_dict.keys():
             feat_importance_dict[feat] /= iter
+        
+        ev = EDA_Visualization(self.data)
+        ev.visualize_feature_importance(feat_importance_dict, ['dummy'])
 
         if select_num:
             # remove the dummy feature
@@ -56,6 +94,14 @@ class FeatureSelection:
         return selected_feats, self.data[selected_feats]
     
     def borutashap_feature_selection(self):
+        '''
+        Feature selection based on Boruta-Shap
+
+        Returns:
+        - selected_feats: the selected features
+        - data: the data with selected features
+        '''
+
         # Initialize Boruta-Shap feature selection method
         feature_selection_model = XGBRegressor(random_state=123) 
         Feature_Selector = BorutaShap(model=feature_selection_model, 
@@ -71,6 +117,6 @@ class FeatureSelection:
         # Get the selected features
         selected_feats = list()
         selected_feats.append(sorted(Feature_Selector.Subset().columns))
-        print(f"Selected features are: {selected_feats[-1]}")
+        print(f"Selected features are: {selected_feats[0]}")
 
-        return selected_feats, self.data[selected_feats[-1]]
+        return selected_feats[0], self.data[selected_feats[0]]

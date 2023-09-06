@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import numpy as np
+from matplotlib import pyplot as plt
 
 class EDA_Visualization:
     def __init__(self, data: pd.DataFrame = None):
@@ -61,3 +63,30 @@ class EDA_Visualization:
 
         return
 
+    def visualize_feature_importance(self, imp_dict: dict, highlight_feats: list[str]=[]):
+        '''
+        Visualize the feature importance
+
+        Parameters:
+        - imp_dict: the dictionary of feature importance
+        - highlight_feats: the list of features to be highlighted in the plot
+        '''
+        
+        # plot imp_dict in the sorted order
+        cv_importances = np.array(list(imp_dict.values()))
+        plt.figure(figsize=(10, 15))
+        plt.barh(np.array(list(imp_dict.keys()))[np.argsort(cv_importances)], cv_importances[np.argsort(cv_importances)])
+
+        # Add title and axis names
+        plt.title('Feature Importances')
+        plt.xlabel('Average Scaled Feature importances')
+        plt.ylabel('Features')
+
+        # Highlight labels
+        [t.set_color('red') for t in plt.gca().get_yticklabels() if t.get_text() in highlight_feats]
+
+        # Add y values
+        for i, v in enumerate(cv_importances[np.argsort(cv_importances)]):
+            plt.text(v, i, " "+str(round(v, 2)), color='blue', va='center')
+
+        plt.show()
