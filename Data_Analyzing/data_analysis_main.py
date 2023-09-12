@@ -27,6 +27,7 @@ class DataAnalysis:
         MI,spearman = p.non_linear()
         heatMap(MI,thresh,'Mutual Information')
         heatMap(spearman,thresh,'Spearman Correlation')
+        
         return 
 
     def variance_analysis(self, data: pd.DataFrame = None):

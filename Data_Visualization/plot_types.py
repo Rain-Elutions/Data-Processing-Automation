@@ -4,7 +4,27 @@ import plotly
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
+from typing import List
 
+def lineChart(data: pd.DataFrame, feat_list: List[str]):
+        '''
+        line chart for visualizing features in time series data
+
+        Parameters:
+        - data: the time series data
+        - feat_list: the list of features to be visualized
+        '''
+        
+        fig = px.line(data, x=data.index, y=feat_list, title=f'Time Series Plot of {feat_list}')
+        fig.update_layout(
+                width=1200,
+                height=600,
+                xaxis_title="Time",
+                yaxis_title="Values",
+        )
+        fig.show()
+
+        return
 
 def barChart(x_list: list, y_list: list, title: str, x_label: str, y_label: str):
         fig = px.bar(x=x_list, y=y_list, title=title)

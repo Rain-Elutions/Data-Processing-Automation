@@ -22,7 +22,7 @@ class FeatureSelection:
         self.data = data
         self.target_name = target_name
 
-    def correlation_selection(self, threshold: float=.5):
+    def correlation_selection(self, threshold: float=.5) -> list[str]:
         '''
         feature selection based on correlation to target
 
@@ -44,7 +44,7 @@ class FeatureSelection:
 
         return high_cor_cols
 
-    def dummy_feature_importance(self, select_num: int = None, iter: int = 20):
+    def dummy_feature_importance(self, select_num: int = None, iter: int = 20) -> tuple[list[str], pd.DataFrame]:
         '''
         Feature selection based on dummy feature importance, get from XGBoost
 
@@ -93,7 +93,7 @@ class FeatureSelection:
 
         return selected_feats, self.data[selected_feats]
     
-    def borutashap_feature_selection(self):
+    def borutashap_feature_selection(self) -> tuple[list[str], pd.DataFrame]:
         '''
         Feature selection based on Boruta-Shap
 

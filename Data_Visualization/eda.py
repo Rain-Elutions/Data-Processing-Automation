@@ -53,6 +53,7 @@ class EDA_Visualization:
 
         """
         data = data if data is not None else self.data
+
         fig = px.line(data, x=data.index, y=col_name, title='Outliers for %s' % col_name)
         fig.add_trace(go.Scatter(x=data.index[outlier_index_list], y=data[col_name].values[outlier_index_list], mode='markers', name='outliers'))
         fig.update_layout(
@@ -71,7 +72,7 @@ class EDA_Visualization:
         - imp_dict: the dictionary of feature importance
         - highlight_feats: the list of features to be highlighted in the plot
         '''
-        
+
         # plot imp_dict in the sorted order
         cv_importances = np.array(list(imp_dict.values()))
         plt.figure(figsize=(10, 15))
@@ -90,3 +91,36 @@ class EDA_Visualization:
             plt.text(v, i, " "+str(round(v, 2)), color='blue', va='center')
 
         plt.show()
+
+        return
+    
+    # need test
+    def visualize_correlation(self, data: pd.DataFrame = None, target_name: str = '', highlight_feats: list[str] = []):
+        '''
+        Visualize the correlation between features and target
+
+        Parameters:
+        - data: the input data
+        - corr_type: the type of correlation to be calculated
+
+        '''
+
+        data = data if data is not None else self.data
+        if target_name == '':
+            raise ValueError('target_name cannot be empty')
+        
+        corr = data.corr()[target_name].sort_values(ascending=False)
+        corr = corr.reset_index().rename(columns={'index': 'Features', target_name: 'Correlation'})
+        corr['Correlation'] = corr['Correlation'].round(2)
+        corr = corr[corr['Features'] != target_name]
+
+        fig = px.bar(corr, x='Features', y='Correlation', color='Correlation', color_continuous_scale='RdBu')
+        fig.update_layout(title='Correlation Between the Target Variable and Features')
+        fig.update_layout(width=1200)
+        fig.update_xaxes(tickfont=dict(size=8))
+
+        # highlight the colored tags in xticks
+        fig.update_xaxes(tickmode='array', tickvals=corr['Features'], ticktext=['<b>' + col + '</b>' if col in highlight_feats else col for col in corr['Features']])
+        fig.update_yaxes(range=[-1, 1])
+
+        fig.show()
