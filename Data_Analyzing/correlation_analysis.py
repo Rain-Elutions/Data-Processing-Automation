@@ -10,23 +10,27 @@ class CorrelationTypes:
          self.topn = topn
          self.target_name = target_name
     
-    def get_redundant_pairs(self):
-         df = self.df.select_dtypes(include=np.number)
-         pairs_to_drop =set()
-         cols = df.columns
-         for i in range(0,df.shape[1]):
-            for j in range(0,i+1):
-                pairs_to_drop.add((cols[i],cols[j]))
-         return pairs_to_drop
-    
     def get_correlations(self):
+         '''
+        Calculate the correlations of each column for linear relations
+
+        Parameters:
+        -data: the input Dataframe
+        '''
+         #selecting only numeric columns 
          df = self.df.select_dtypes(include=np.number)
-         au_corr = df.corr().dropna(how='all').dropna(axis=1,how='all')
+
+         #creating the correlations
+         au_corr = df.corr().dropna(how='all').dropna(axis=1,how='all') # drop rows/columns where all correlations are NA
          return au_corr
     
-    def non_linear(self):
-         
-         def calculate_MI(df: pd.DataFrame) -> pd.Series:
+    def calculate_MI(self,df: pd.DataFrame) -> pd.Series:
+            '''
+            Calculate the mutual information of a df in order to determine nonlinear relations
+
+            Parameters:
+            -data: the input Dataframe
+            '''
             mi_values = []
             for col1 in df.columns:
                 mi_row = []
@@ -38,19 +42,28 @@ class CorrelationTypes:
                 
                 mi_values.append(mi_row)
             
-            mi_matrix = pd.DataFrame(mi_values, columns=df.columns, index=df.columns).dropna(how='all').dropna(axis=1,how='all')
+            mi_matrix = pd.DataFrame(mi_values, columns=df.columns, index=df.columns).dropna(how='all').dropna(axis=1,how='all')# drop rows/columns where all correlations are NA
+     
             return mi_matrix
-         df = self.df
+    
+    def non_linear(self):
+         '''
+        Calculate the correlations of each column for nonlinear relations
 
+        Parameters:
+        -data: the input Dataframe
+        '''
          # Calculate the mean for numeric columns
-         numeric_columns = df.select_dtypes(include=[np.number]).columns
-         spearmancorr = df[numeric_columns].corr(method='spearman').dropna(how='all').dropna(axis=1,how='all')
+         numeric_columns =self.df.select_dtypes(include=[np.number]).columns
+         spearmancorr = self.df[numeric_columns].corr(method='spearman').dropna(how='all').dropna(axis=1,how='all')
+
          # Calculate mutual information matrix
-         df = df[numeric_columns].dropna(axis=1,how='all')
-         mi_matrix = calculate_MI(df)
+         df = self.df[numeric_columns].dropna(axis=1,how='all')
+         mi_matrix = self.calculate_MI(df)
 
          # Export the mutual information matrix to a CSV file
-         mi_matrix.to_csv('./mutual_information_matrix.csv', index=True)
+         mi_matrix.to_csv('./Data_Analyzing/mutual_information_matrix.csv', index=True)
+
          return mi_matrix,spearmancorr
 
     def top_correlations(self):
