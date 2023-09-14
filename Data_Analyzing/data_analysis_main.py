@@ -19,12 +19,19 @@ class DataAnalysis:
         -thresh: the threshold for correlations to include in the heatmap
         
         '''
+        # getting linear full correlations
         p = CorrelationTypes(self.data,10,self.target_name)
         corrplot = p.get_correlations()
-        corrplot.to_csv('./Data_Analyzing/test.csv')  #Place Holder
-        #corrBar(corrplot)
-        heatMap(corrplot,thresh,'Correlation')
+
+        # exporting the correlaions to csvs (full correlation matrix, all tags to the target)
+        corrplot.to_csv('./Data_Analyzing/fullcorr.csv') 
+        corrplot[self.target_name].to_csv('./Data_Analyzing/'+  self.target_name +'_corr.csv')
+
+        # getting nonlinear correlations
         MI,spearman = p.non_linear()
+
+        # creating heatmaps
+        heatMap(corrplot,thresh,'Correlation')
         heatMap(MI,thresh,'Mutual Information')
         heatMap(spearman,thresh,'Spearman Correlation')
         
