@@ -63,6 +63,146 @@ def heatMap(data,mask: float = 0.5,settitle:str=''):
         fig.show()
         return
 
+def single_column_vis(df: pd.DataFrame, col_name: str, title_name: str) -> go.Figure:
+    """
+    Helper function to visualize a single column
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        data of interest
+    col_name : str
+        column to visualize
+    title_name : str
+        title for the plot
+    
+    Returns
+    -------
+    fig : go.Figure
+        visualization for a single variable
+    """
+    
+    fig = make_subplots(rows=2, cols=2,
+                        specs=[
+                               [{'colspan':2}, None],
+                               [{'type':'histogram'}, {'type':'bar'}]],
+                        column_widths=[0.5,0.5],
+                        vertical_spacing=0.1, horizontal_spacing=0.1,
+                        subplot_titles=(
+                                        f'Daily {col_name} Trend',
+                                        f'{col_name} Distribution',
+                                        f'{col_name} Box')
+                       )
+
+    # Top
+    df_day = df.groupby(df.index.date)[col_name].mean()
+    fig.add_trace(go.Scatter(x=df_day.index, y=df_day,
+                             mode='lines',
+                             marker=dict(color=px.colors.sequential.Viridis[5]),
+                             name='Daily Trend'),
+                  row=1, col=1)
+
+    # Left Bottom Chart
+    fig.add_trace(go.Histogram(x=df[col_name], 
+                               name='Distribution', 
+                               marker = dict(color = px.colors.sequential.Viridis[3])
+                               ), 
+                  row = 2, col = 1)
+
+    fig.update_xaxes(showgrid = False, showline = True, 
+                     linecolor = 'gray', linewidth = 2, 
+                     row = 2, col = 1)
+    fig.update_yaxes(showgrid = False, gridcolor = 'gray', 
+                     gridwidth = 0.5, showline = True, 
+                     linecolor = 'gray', linewidth = 2, 
+                     row = 2, col = 1)
+
+    # Right Bottom Chart
+    fig.add_trace(go.Box(y=df[col_name],
+                         name=f'{col_name}Box'
+
+                             ),
+                             row=2, col=2)
+
+    fig.update_xaxes(showgrid = False, linecolor='gray', 
+                     linewidth = 2, zeroline = False, 
+                     row=2, col=2)
+    fig.update_yaxes(showgrid = False, linecolor='gray',
+                     linewidth=2, zeroline = False, 
+                     row=2, col=2)
+
+
+    # General Styling
+    # NOTE: again consider doing this else where ...
+    fig.update_layout(height=700, bargap=0.2,
+                      margin=dict(b=50,r=30,l=100),
+                      title = f"<span style='font-size:36px; font-family:Times New Roman'>{col_name} {title_name}</span>",                  
+                      plot_bgcolor='rgb(242,242,242)',
+                      paper_bgcolor = 'rgb(242,242,242)',
+                      font=dict(family="Times New Roman", size= 14),
+                      hoverlabel=dict(font_color="floralwhite"),
+                      showlegend=False)
+    return fig
+
+def two_line_plot(df: pd.DataFrame, col_one: str, col_two: str) -> go.Figure:
+    """
+    Function to make two line plots
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        data of interest
+    col_one : str
+        name of the first variable of interest
+    col_two : str
+        name of the second variable of interest
+
+    Returns
+    -------
+    fig : go.Figure
+        two line plots
+    """
+    
+    fig = make_subplots(rows=1, cols=2,
+                        specs=[
+                               [{'colspan':2}, None]
+                               ],
+
+                        vertical_spacing=0.1, horizontal_spacing=0.1,
+                        subplot_titles=(
+                                        'Daily Trend',
+                                        )
+                       )
+
+
+    # Top Chart
+    df_day = df.groupby(df.index.date)[col_one].mean()
+    fig.add_trace(go.Scatter(x=df_day.index, y=df_day,
+                             mode='lines',
+                             marker=dict(color=px.colors.sequential.Viridis[2]),
+                             name=f'{col_one}'),
+                  row=1, col=1)
+
+    df_day = df.groupby(df.index.date)[col_two].mean()
+    fig.add_trace(go.Scatter(x=df_day.index, y=df_day,
+                             mode='lines',
+                             marker=dict(color=px.colors.sequential.Viridis[8]),
+                             name=f'{col_two}'),
+                  row=1, col=1)
+
+    # General Styling
+    # NOTE: could also do this elsewhere
+    fig.update_layout(height=800, bargap=0.2,
+                      margin=dict(b=50,r=30,l=100),
+                      title = "<span style='font-size:36px; font-family:Times New Roman'>Input & Output</span>",                  
+                      plot_bgcolor='rgb(242,242,242)',
+                      paper_bgcolor = 'rgb(242,242,242)',
+                      font=dict(family="Times New Roman", size= 14),
+                      hoverlabel=dict(font_color="floralwhite"),
+                      showlegend=True)
+    return fig
+
+
 class BoxPlots:
         def __init__(self,df1: pd.DataFrame,df2: pd.DataFrame,target_name: str = '', col_name1 = '',col_name2=''):
                 self.df1 = df1
