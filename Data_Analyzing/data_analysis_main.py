@@ -10,7 +10,7 @@ class DataAnalysis:
         self.data = data
         self.target_name = target_name
 
-    def correlation_analysis(self,thresh:float = 0.5):
+    def correlation_analysis(self,thresh:float = 0):
         '''
         Calculate the correlations of each column for linear and non linear relations
 
@@ -35,9 +35,9 @@ class DataAnalysis:
         
         
         # creating heatmaps
-        heatMap(corrplot,thresh,'Correlation')
-        heatMap(spearman,thresh,'Spearman Correlation')
-        heatMap(MIaug,thresh,'Mutual Information')
+        heatMap(corrplot,'Correlation')
+        heatMap(spearman,'Spearman Correlation')
+        heatMap(MIaug,'Mutual Information')
         
         return 
 

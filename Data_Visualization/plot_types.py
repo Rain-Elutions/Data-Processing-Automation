@@ -45,17 +45,13 @@ def corrBar(data):
         fig.show()
         return
 
-def heatMap(data,mask: float = 0.5,settitle:str=''):
-        corr = data
-        mask = corr > mask
-        fig = go.Figure(go.Heatmap(
-        z=corr.mask(mask),
-        x=corr.columns,
-        y=corr.columns,
-        colorscale=px.colors.diverging.RdBu,
-        zmin=-1,
-        zmax=1
-        ))
+def heatMap(data,settitle:str=''):
+        fig = go.Figure(data=go.Heatmap(
+                    z=data,
+                    x=data.columns,
+                    y=data.columns,
+                    colorscale=px.colors.diverging.RdYlBu)
+                    )
         fig.update_layout(
                 title = settitle,
                 title_x=0.5
