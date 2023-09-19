@@ -21,19 +21,23 @@ class DataAnalysis:
         '''
         # getting linear full correlations
         p = CorrelationTypes(self.data,10,self.target_name)
-        corrplot = p.get_correlations()
-
-        # exporting the correlaions to csvs (full correlation matrix, all tags to the target)
-        corrplot.to_csv('./Data_Analyzing/fullcorr.csv') 
-        corrplot[self.target_name].to_csv('./Data_Analyzing/'+  self.target_name +'_corr.csv')
+        fullcorr, corrplot = p.get_correlations()
 
         # getting nonlinear correlations
-        MI,spearman = p.non_linear()
+        MIfull,MIaug,spearman = p.non_linear()
 
+        # exporting the correlaions to csvs (full correlation matrix, all tags to the target)
+        fullcorr.to_csv('./Data_Analyzing/'+ self.target_name +'_fullcorr.csv') 
+        corrplot.to_csv('./Data_Analyzing/'+ self.target_name +'_augcorr.csv') 
+        corrplot[self.target_name].to_csv('./Data_Analyzing/'+  self.target_name +'_corr.csv')
+        MIfull.to_csv('./Data_Analyzing/'+ self.target_name +'_mutual_information_matrix_full.csv', index=True)
+        MIaug.to_csv('./Data_Analyzing/'+ self.target_name +'_mutual_information_matrix_aug.csv', index=True)
+        
+        
         # creating heatmaps
         heatMap(corrplot,thresh,'Correlation')
-        heatMap(MI,thresh,'Mutual Information')
         heatMap(spearman,thresh,'Spearman Correlation')
+        heatMap(MIaug,thresh,'Mutual Information')
         
         return 
 
