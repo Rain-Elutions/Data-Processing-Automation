@@ -70,7 +70,7 @@ class TargetEncoding():
         - categorical_cols: a list of categorical columns
         '''
 
-        categorical_cols = self.data.select_dtypes(include=['object']).columns.tolist()
+        categorical_cols = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
         # delete the target column if it is in the list
         for col in self.target_list:
             if col in categorical_cols:
@@ -121,7 +121,7 @@ class OrdinalEncoding():
         - categorical_cols: a list of categorical columns
         '''
 
-        categorical_cols = self.data.select_dtypes(include=['object']).columns.tolist()
+        categorical_cols = self.data.select_dtypes(include=['object', 'category']).columns.tolist()
         # delete the target column if it is in the list
         for col in self.target_list:
             if col in categorical_cols:
