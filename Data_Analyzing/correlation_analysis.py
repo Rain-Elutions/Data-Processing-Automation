@@ -21,8 +21,9 @@ class CorrelationTypes:
          df = self.df.select_dtypes(include=np.number)
 
          #creating the correlations
-         au_corr = df.corr().dropna(how='all').dropna(axis=1,how='all') # drop rows/columns where all correlations are NA
-         return au_corr
+         fullcorr = df.corr()
+         augcorr = fullcorr.dropna(how='all').dropna(axis=1,how='all') # drop rows/columns where all correlations are NA
+         return fullcorr,augcorr
     
     def calculate_MI(self,df: pd.DataFrame) -> pd.Series:
             '''
@@ -41,10 +42,10 @@ class CorrelationTypes:
                     mi_row.append(mi)
                 
                 mi_values.append(mi_row)
-            
-            mi_matrix = pd.DataFrame(mi_values, columns=df.columns, index=df.columns).dropna(how='all').dropna(axis=1,how='all')# drop rows/columns where all correlations are NA
+            mi_matrixfull =  pd.DataFrame(mi_values, columns=df.columns, index=df.columns)
+            mi_matrixaug = mi_matrixfull.dropna(how='all').dropna(axis=1,how='all')# drop rows/columns where all correlations are NA
      
-            return mi_matrix
+            return mi_matrixfull, mi_matrixaug
     
     def non_linear(self):
          '''
@@ -59,12 +60,9 @@ class CorrelationTypes:
 
          # Calculate mutual information matrix
          df = self.df[numeric_columns].dropna(axis=1,how='all')
-         mi_matrix = self.calculate_MI(df)
-
-         # Export the mutual information matrix to a CSV file
-         mi_matrix.to_csv('./Data_Analyzing/mutual_information_matrix.csv', index=True)
-
-         return mi_matrix,spearmancorr
+         mi_matrixfull,mi_matrixaug = self.calculate_MI(df)
+         
+         return  mi_matrixfull,mi_matrixaug,spearmancorr
 
     def top_correlations(self):
             '''
