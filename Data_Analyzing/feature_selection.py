@@ -82,6 +82,7 @@ class FeatureSelection:
         ev = EDA_Visualization(self.data)
         ev.visualize_feature_importance(feat_importance_dict, ['dummy'])
 
+        # select the highest select_num features
         if select_num:
             # remove the dummy feature
             feat_importance_dict.pop('dummy')

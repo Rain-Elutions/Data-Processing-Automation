@@ -150,7 +150,22 @@ class OrdinalEncoding():
         # using OrdinalEncoder
         encoder = OrdinalEncoder()
         col_list = self.get_columns()
-        self.data[col_list] = encoder.fit_transform(self.data[col_list])
+
+        data_preprocessing = DataPreprocessing()
+        X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(self.data, self.target_list)
+
+        encoder.fit(X_train[col_list], y_train)
+        X_train[col_list] = encoder.transform(X_train[col_list])
+        X_val[col_list] = encoder.transform(X_val[col_list])
+        X_test[col_list] = encoder.transform(X_test[col_list])
+
+        # Create DataFrames for training, validation, and test sets
+        df_train = pd.concat([X_train, y_train], axis=1)
+        df_val = pd.concat([X_val, y_val], axis=1)
+        df_test = pd.concat([X_test, y_test], axis=1)
+
+        # Concatenate training, validation, and test sets back to the original DataFrame
+        self.data = pd.concat([df_train, df_val, df_test])
 
         return self.data
 
