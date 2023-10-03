@@ -30,8 +30,8 @@ class FeatureSelection:
         - threshold: the threshold of correlation to be selected
 
         Returns:
-        - high_cor_cols: the columns with correlation to target greater than threshold
-
+        - selected_feats: the columns with correlation to target greater than threshold
+        - data: the data with selected features
         '''
 
         # threshold being .5 comes from IES
@@ -40,9 +40,9 @@ class FeatureSelection:
         target_corr = corr_matrix[self.target_name]
         target_corr_positive = target_corr[target_corr > threshold]
         target_corr_negative = target_corr[target_corr < -threshold]
-        high_cor_cols = pd.concat([target_corr_positive, target_corr_negative])
+        selected_feats = pd.concat([target_corr_positive, target_corr_negative])
 
-        return high_cor_cols
+        return selected_feats, self.data[selected_feats]
 
     def dummy_feature_importance(self, select_num: int = None, iter: int = 20) -> tuple[list[str], pd.DataFrame]:
         '''
