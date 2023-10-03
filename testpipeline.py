@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from Data_Exploration.data_exploration_main import DataExploration
 from Data_Cleansing.data_cleansing_main import DataCleansing
-from Data_Preprocessing.data_preprocessing_main import DataPreprocessing, TargetEncoding, BinaryEncoding, OrdinalEncoding, FeatureScaling
+from Data_Preprocessing.data_preprocessing_main import DataPreprocessing
 from Data_Preprocessing.feature_engineering import FeatureEngineering
 from Data_Analyzing.data_analysis_main import DataAnalysis
 from Data_Analyzing.feature_selection import FeatureSelection
