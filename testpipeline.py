@@ -65,19 +65,19 @@ class DataProcessing:
         if optional == True:
             da = DataAnalysis(df,self.target)
             da.correlation_analysis()
-            da.variance_analysis(df)
+            da.variance_analysis()
 
         # Feature Selection
         fs = FeatureSelection(df, self.target)
         if optional == True:
             if feature_selector == 'dummy':
-                selected_tags, selected_df = fs.dummy_feature_importance()
+                selected_tags, df = fs.dummy_feature_importance()
                 print(selected_tags)
             if feature_selector == 'boruta':
-                selected_tags, selected_df = fs.borutashap_feature_selection()
+                selected_tags, df = fs.borutashap_feature_selection()
                 print(selected_tags)
             if feature_selector == 'correlation':
-                selected_tags, selected_df = fs.correlation_selection()
+                selected_tags, df = fs.correlation_selection()
                 print(selected_tags)
 
-        return selected_df
+        return df
