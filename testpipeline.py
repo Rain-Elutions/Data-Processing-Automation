@@ -19,11 +19,13 @@ class DataProcessing:
         self.target_list = target_list
         self.problem_type = problem_type
 
-    def pipeline(self, optional: bool=None, resample: bool=None,timescale: str = 'h', engineering: str = None, feature_selector: str = 'boruta'):
+    def pipeline(self, optional: bool = None, parse_dates: bool = True,drop_thresh: float = 0.5, fill_missing_method: str = 'mean', resample: bool = None, 
+                 timescale: str = 'h', engineering: str = None, feature_selector: str = 'boruta'):
         data_exp = DataExploration()
-        df = data_exp.load_data(self.data_source, parse_dates=False, index_col=0)
+        df = data_exp.load_data(self.data_source, parse_dates, index_col=0)
         data_exp.get_data_size()
-        data_exp.get_data_type(df,df.columns[0])
+        for i in range(len(df.columns)):
+            data_exp.get_data_type(df,df.columns[i])
         data_exp.summarize_data_type()
         data_exp.summarize_missing_data()
 
@@ -36,12 +38,13 @@ class DataProcessing:
         df = data_cleansing.remove_duplicates(df)
         data_exp.summarize_missing_data(df)
 
-        df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh=0.5, fill_missing_method='mean')
+        df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh, fill_missing_method)
         data_exp.summarize_missing_data(df)
 
         if self.optional == True:
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
-            data_cleansing.detect_outliers(df, col_name=df.columns[10], threshold=3)
+            for i in range(len(df.columns)):
+                data_cleansing.detect_outliers(df, col_name=df.columns[i], threshold=3)
 
         # Encoding & Scaling
         dp = DataPreprocessing(df, [self.target_list])
