@@ -37,16 +37,14 @@ class DataProcessing:
 
         df = data_cleansing.remove_duplicates(df)
         data_exp.summarize_missing_data(df)
-        print(df)
+
         df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh, fill_missing_method)
         data_exp.summarize_missing_data(df)
-        print(df)
+
         if optional == True:
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
             for i in range(len(df.columns)):
                 data_cleansing.detect_outliers(df, col_name=df.columns[i], threshold=3)
-        
-        print(df)
 
         # Encoding & Scaling
         dp = DataPreprocessing(df, [self.target_list])
@@ -57,7 +55,6 @@ class DataProcessing:
         if resample == True:
             df = dp.data_resampling(df, timescale)
 
-        print(df)
         # Analysis 
         if optional == True:
             da = DataAnalysis(df,self.target)
@@ -74,11 +71,12 @@ class DataProcessing:
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
             df = fe.transform_gain(df)
 
-        print(df)
-
         # Feature Selection
         fs = FeatureSelection(df, self.target)
-        if len(df) > 20:
+        num_features = len(df)
+        if num_features > 20:
+            if num_features < 50:
+                optional = True
             if optional == True:
                 if feature_selector == 'dummy':
                     selected_tags, df = fs.dummy_feature_importance()
