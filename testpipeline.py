@@ -61,7 +61,8 @@ class DataProcessing:
             da.correlation_analysis()
             da.variance_analysis()
 
-        # Feature Engineering
+        # Feature Engineering (should this go after selection?)
+        # should we make this a seperate df and then concat after feature selection?
         fe = FeatureEngineering(df)
         if engineering == 'time_lag':
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
@@ -89,4 +90,5 @@ class DataProcessing:
                     print(selected_tags)
         else:
             print('Too few features for selection')
+
         return df
