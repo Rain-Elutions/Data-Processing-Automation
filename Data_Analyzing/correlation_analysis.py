@@ -85,7 +85,7 @@ class CorrelationTypes:
             # filtering the top relations
             # sorting the correlations
             allrealtions = self.df.corr()
-            toprelations = allrealtions[self.topn]
+            toprelations = allrealtions[self.topn.columns[0]]
             tag = allrealtions[self.target_name].dropna().sort_values(ascending=False)
 
             #Making correlation matrix for top and bottom n linear correlations
@@ -99,6 +99,7 @@ class CorrelationTypes:
             fig.write_html('./Data_Cleansing/'+ self.target_name +"_anomaly_report/graphics/" + self.target_name + ".html")
             
             #merging the top corelations together
+            toprelations = toprelations.to_frame()
             k = len(toprelations.columns)
             print(toprelations.columns)
             for i in range(0,k):

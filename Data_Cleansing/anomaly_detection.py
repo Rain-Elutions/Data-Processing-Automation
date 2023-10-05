@@ -215,7 +215,7 @@ class AnomalyDetection:
 
                 # feature selecting to find the top n most important features
                 args = FeatureSelection(self.df,self.target_name)
-                topn = args.correlation_selection().index
+                topn , selected_features = args.correlation_selection()
                 topn_list = list(topn)
                 print('Selected Features are' , ', '.join(topn_list))
 

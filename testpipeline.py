@@ -13,16 +13,16 @@ from Data_Analyzing.feature_selection import FeatureSelection
 from Data_Visualization.eda import EDA_Visualization
 
 class DataProcessing:
-    def __init__(self, data_source: str=None, target: str = None,target_list: list = None,problem_type: str = None):
+    def __init__(self, data_source: str = None, target: str = None, target_list: list = None, problem_type: str = None):
         self.data_source = data_source
         self.target = target
         self.target_list = target_list
         self.problem_type = problem_type
 
-    def pipeline(self, optional: bool = None, parse_dates: bool = True,drop_thresh: float = 0.5, fill_missing_method: str = 'mean', resample: bool = None, 
+    def pipeline(self, optional: bool = None, parse: bool = True, index = None, drop_thresh: float = 0.5, fill_missing_method: str = 'mean', resample: bool = None, 
                  timescale: str = 'h', engineering: str = None, feature_selector: str = 'boruta'):
         data_exp = DataExploration()
-        df = data_exp.load_data(self.data_source, parse_dates, index_col=0)
+        df = data_exp.load_data(self.data_source, parse_dates = parse, index_col = index)
         data_exp.get_data_size()
         for i in range(len(df.columns)):
             data_exp.get_data_type(df,df.columns[i])
@@ -41,7 +41,7 @@ class DataProcessing:
         df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh, fill_missing_method)
         data_exp.summarize_missing_data(df)
 
-        if self.optional == True:
+        if optional == True:
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
             for i in range(len(df.columns)):
                 data_cleansing.detect_outliers(df, col_name=df.columns[i], threshold=3)
@@ -54,6 +54,12 @@ class DataProcessing:
             df = dp.feature_scaling(df)
         if resample == True:
             df = dp.data_resampling(df, timescale)
+        
+        # Analysis 
+        if optional == True:
+            da = DataAnalysis(df,self.target)
+            da.correlation_analysis()
+            da.variance_analysis()
 
         # Feature Engineering
         fe = FeatureEngineering(df)
@@ -65,10 +71,7 @@ class DataProcessing:
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
             df = fe.transform_gain(df)
 
-        if optional == True:
-            da = DataAnalysis(df,self.target)
-            da.correlation_analysis()
-            da.variance_analysis()
+        
 
         # Feature Selection
         fs = FeatureSelection(df, self.target)

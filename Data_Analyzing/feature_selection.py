@@ -39,10 +39,10 @@ class FeatureSelection:
         # get columns with correlation to target greater than threshold
         target_corr = corr_matrix[self.target_name]
         target_corr_positive = target_corr[target_corr > threshold]
-        target_corr_negative = target_corr[target_corr < -threshold]
+        target_corr_negative = target_corr[target_corr < (-1)*threshold]
         selected_feats = pd.concat([target_corr_positive, target_corr_negative])
-
-        return selected_feats, self.data[selected_feats]
+        selected_feats = selected_feats.to_frame()
+        return selected_feats, self.data[selected_feats.columns[0]]
 
     def dummy_feature_importance(self, select_num: int = None, iter: int = 20) -> tuple[list[str], pd.DataFrame]:
         '''
