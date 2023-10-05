@@ -78,15 +78,17 @@ class DataProcessing:
 
         # Feature Selection
         fs = FeatureSelection(df, self.target)
-        if optional == True:
-            if feature_selector == 'dummy':
-                selected_tags, df = fs.dummy_feature_importance()
-                print(selected_tags)
-            if feature_selector == 'boruta':
-                selected_tags, df = fs.borutashap_feature_selection()
-                print(selected_tags)
-            if feature_selector == 'correlation':
-                selected_tags, df = fs.correlation_selection()
-                print(selected_tags)
-
+        if len(df) > 20:
+            if optional == True:
+                if feature_selector == 'dummy':
+                    selected_tags, df = fs.dummy_feature_importance()
+                    print(selected_tags)
+                if feature_selector == 'boruta':
+                    selected_tags, df = fs.borutashap_feature_selection()
+                    print(selected_tags)
+                if feature_selector == 'correlation':
+                    selected_tags, df = fs.correlation_selection()
+                    print(selected_tags)
+        else:
+            print('Too few features for selection')
         return df
