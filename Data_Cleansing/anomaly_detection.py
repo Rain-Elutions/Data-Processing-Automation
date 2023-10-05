@@ -158,7 +158,7 @@ class AnomalyDetection:
             optimal = df[df['Anomaly']== 0]
             suboptimal = df[df['Anomaly']== 1]
 
-            return optimal, suboptimal
+            return optimal, suboptimal, lower , upper
         
         def anomaly_report(self):
                 '''
@@ -222,8 +222,7 @@ class AnomalyDetection:
                 # separtating into optimal and suboptimal outputs 
                 # filtering the top n most important features 
                 # outputing those to .csvs
-                lower, upper = self.__get_bound()
-                optimaloutput, suboptimaloutput = self.__get_anomalies()
+                optimaloutput, suboptimaloutput, lower, upper = self.__get_anomalies()
                 optimaloutputtop = optimaloutput[topn]
                 suboptimaloutputtop = suboptimaloutput[topn]
 

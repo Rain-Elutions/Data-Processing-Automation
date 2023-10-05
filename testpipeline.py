@@ -31,20 +31,22 @@ class DataProcessing:
 
         eda_vis = EDA_Visualization(df)
         eda_vis.visualize_missing_data()
-
+        
         # DataCleansing Module
         data_cleansing = DataCleansing(df)
 
         df = data_cleansing.remove_duplicates(df)
         data_exp.summarize_missing_data(df)
-
+        print(df)
         df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh, fill_missing_method)
         data_exp.summarize_missing_data(df)
-
+        print(df)
         if optional == True:
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
             for i in range(len(df.columns)):
                 data_cleansing.detect_outliers(df, col_name=df.columns[i], threshold=3)
+        
+        print(df)
 
         # Encoding & Scaling
         dp = DataPreprocessing(df, [self.target_list])
@@ -54,7 +56,8 @@ class DataProcessing:
             df = dp.feature_scaling(df)
         if resample == True:
             df = dp.data_resampling(df, timescale)
-        
+
+        print(df)
         # Analysis 
         if optional == True:
             da = DataAnalysis(df,self.target)
@@ -71,7 +74,7 @@ class DataProcessing:
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
             df = fe.transform_gain(df)
 
-        
+        print(df)
 
         # Feature Selection
         fs = FeatureSelection(df, self.target)

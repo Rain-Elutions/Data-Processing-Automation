@@ -79,7 +79,7 @@ class DataCleansing:
         data = data if data is not None else self.data
         # drop duplicate rows
         data = data.drop_duplicates()
-        data = data.reset_index(drop=True)
+        data = data.reset_index(drop=False)
 
         # drop columns with all values be the same
         # duplicate_columns = data.columns[data.T.duplicated(keep='first')]
