@@ -43,7 +43,7 @@ class DataProcessing:
 
         if optional == True:
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
-            for i in range(len(df.columns)):
+            for i in range(1,len(df.columns)):
                 data_cleansing.detect_outliers(df, col_name=df.columns[i], threshold=3)
 
         # Encoding & Scaling
