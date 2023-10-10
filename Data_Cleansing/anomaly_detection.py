@@ -158,7 +158,7 @@ class AnomalyDetection:
             optimal = df[df['Anomaly']== 0]
             suboptimal = df[df['Anomaly']== 1]
 
-            return optimal, suboptimal
+            return optimal, suboptimal, lower , upper
         
         def anomaly_report(self):
                 '''
@@ -215,18 +215,17 @@ class AnomalyDetection:
 
                 # feature selecting to find the top n most important features
                 args = FeatureSelection(self.df,self.target_name)
-                topn = args.correlation_selection().index
-                topn_list = list(topn)
+                topn , selected_features = args.correlation_selection()
+                topn_list = list(topn.index)
                 print('Selected Features are' , ', '.join(topn_list))
 
                 # separtating into optimal and suboptimal outputs 
                 # filtering the top n most important features 
                 # outputing those to .csvs
-                lower, upper = self.__get_bound()
-                optimaloutput, suboptimaloutput = self.__get_anomalies()
-                optimaloutputtop = optimaloutput[topn]
-                suboptimaloutputtop = suboptimaloutput[topn]
-
+                optimaloutput, suboptimaloutput, lower, upper = self.__get_anomalies()
+                optimaloutputtop = optimaloutput[topn_list]
+                suboptimaloutputtop = suboptimaloutput[topn_list]
+                
                 optimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + target_name + '_toptagsoptimal.xlsx', index=True)
                 suboptimaloutputtop.to_excel('./Data_Cleansing/'+ new_directory_name + '/xlsx/' + target_name + '_toptagssuboptimal.xlsx', index=True)
 
@@ -237,8 +236,12 @@ class AnomalyDetection:
                         if i % 2 == 0:
                             optimal = optimaloutputtop.iloc[:,i:i+2]
                             suboptimal = suboptimaloutputtop.iloc[:,i:i+2]
-                            vis = BoxPlots(optimal, suboptimal, target_name, optimal.columns[0], optimal.columns[1])
-                            vis.double_boxplot()
+                            if not optimal.dtypes.eq('<M8[ns]').any() and not suboptimal.dtypes.eq('<M8[ns]').any():
+                                vis = BoxPlots(optimal, suboptimal, target_name, optimal.columns[0], optimal.columns[1])
+                                vis.double_boxplot()
+                            else:
+                                print(f"Error: DateTime data detected in columns {i} and {i+1}. Please ensure numerical data is used.")
+
                 else:
                     print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
                 

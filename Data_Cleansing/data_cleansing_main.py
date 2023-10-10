@@ -80,7 +80,7 @@ class DataCleansing:
         data = data if data is not None else self.data
         # drop duplicate rows
         data = data.drop_duplicates()
-        data = data.reset_index(drop=True)
+        data = data.reset_index(drop=False)
 
         # drop columns with all values be the same
         # duplicate_columns = data.columns[data.T.duplicated(keep='first')]
@@ -214,16 +214,17 @@ class DataCleansing:
             json.dump(z_scores, f)
         
         outliers_index_list = np.where(z_scores > threshold)
-        print("%d outliers detected" % len(outliers_index_list[0]))
+        if len(outliers_index_list[0]) > 0:
+            print("%d outliers detected in " % len(outliers_index_list[0]) + col_name)
 
-        # get the lower and upper bound of the outliers
-        # lower_bound = np.mean(data[col_name]) - threshold * np.std(data[col_name])
-        # upper_bound = np.mean(data[col_name]) + threshold * np.std(data[col_name])
-        # print("Lower bound: %.2f" % lower_bound)
-        # print("Upper bound: %.2f" % upper_bound)
-
-        eda_vis = EDA_Visualization()
-        eda_vis.visualize_outliers(data, col_name, outliers_index_list)
+            # get the lower and upper bound of the outliers
+            # lower_bound = np.mean(data[col_name]) - threshold * np.std(data[col_name])
+            # upper_bound = np.mean(data[col_name]) + threshold * np.std(data[col_name])
+            # print("Lower bound: %.2f" % lower_bound)
+            # print("Upper bound: %.2f" % upper_bound)
+        
+            eda_vis = EDA_Visualization()
+            eda_vis.visualize_outliers(data, col_name, outliers_index_list)
 
         return
 
