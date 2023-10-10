@@ -25,12 +25,15 @@ class DataProcessing:
         print('Loading Data...')
         data_exp = DataExploration()
         df = data_exp.load_data(self.data_source, parse_dates = parse, index_col = index)
+
         print('Getting Size...')
         data_exp.get_data_size()
         for i in range(len(df.columns)):
             data_exp.get_data_type(df,df.columns[i])
+
         print('Summarizing Type...')
         data_exp.summarize_data_type()
+
         print('Summarizing Missing Data...')
         data_exp.summarize_missing_data()
 
@@ -41,6 +44,7 @@ class DataProcessing:
         data_cleansing = DataCleansing(df)
         print('Removing Duplicates...')
         df = data_cleansing.remove_duplicates(df)
+
         print('Summarizing Missing Data...')
         data_exp.summarize_missing_data(df)
 
@@ -51,6 +55,7 @@ class DataProcessing:
         if optional == True:
             print('Generating Anomaly Report...')
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
+
             print('Detecting Outliers...')
             for i in range(1,len(df.select_dtypes(include=['number']).columns)):
                 data_cleansing.detect_outliers(df.select_dtypes(include=['number']), col_name=df.select_dtypes(include=['number']).columns[i], threshold=3)
