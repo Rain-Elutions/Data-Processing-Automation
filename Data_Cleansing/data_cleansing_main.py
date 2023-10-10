@@ -126,7 +126,8 @@ class DataCleansing:
         
         # fill missing values for the rest of the columns
         try:
-            data = fill_method_factory(fill_missing_method).fill_missing(data)
+            numeric_columns = data.select_dtypes(include=['number'])
+            data[numeric_columns.columns] = fill_method_factory(fill_missing_method).fill_missing(numeric_columns)
             print("Filled missing values using %s" % fill_missing_method)
         except KeyError:
             print("Filling failed. Invalid fill missing method, choose from: mean, median, model, forward, back, notfill")
@@ -209,9 +210,10 @@ class DataCleansing:
             return
 
         z_scores = np.abs(stats.zscore(data[col_name]))
+        z_scores_dict = z_scores.to_dict()
         # save the threshold to a json file
-        with open('temp_save/z_scores.json', 'w') as f:
-            json.dump(z_scores, f)
+        with open('./temp_save/z_scores.json', 'w') as f:
+            json.dump(z_scores_dict, f)
         
         outliers_index_list = np.where(z_scores > threshold)
         if len(outliers_index_list[0]) > 0:

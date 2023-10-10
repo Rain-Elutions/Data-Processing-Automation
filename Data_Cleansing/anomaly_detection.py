@@ -214,7 +214,7 @@ class AnomalyDetection:
 
 
                 # feature selecting to find the top n most important features
-                args = FeatureSelection(self.df,self.target_name)
+                args = FeatureSelection(self.df.select_dtypes(include=['number']),self.target_name)
                 topn , selected_features = args.correlation_selection()
                 topn_list = list(topn.index)
                 print('Selected Features are' , ', '.join(topn_list))
@@ -246,7 +246,7 @@ class AnomalyDetection:
                     print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
                 
                 #creating correlation csvs
-                corr = CorrelationTypes(self.df, topn, self.target_name)
+                corr = CorrelationTypes(self.df.select_dtypes(include=['number']), topn, self.target_name)
                 corr.top_correlations()
 
 

@@ -19,14 +19,19 @@ class DataProcessing:
         self.target_list = target_list
         self.problem_type = problem_type
 
-    def pipeline(self, optional: bool = None, parse: bool = True, index = None, drop_thresh: float = 0.5, fill_missing_method: str = 'mean', resample: bool = None, 
+    def pipeline(self, optional: bool = None, parse: bool = True, index = 0, drop_thresh: float = 0.5, fill_missing_method: str = 'mean', resample: bool = None, 
                  timescale: str = 'h', engineering: str = None, feature_selector: str = 'boruta'):
+        #Data Exploration
+        print('Loading Data...')
         data_exp = DataExploration()
         df = data_exp.load_data(self.data_source, parse_dates = parse, index_col = index)
+        print('Getting Size...')
         data_exp.get_data_size()
         for i in range(len(df.columns)):
             data_exp.get_data_type(df,df.columns[i])
+        print('Summarizing Type...')
         data_exp.summarize_data_type()
+        print('Summarizing Missing Data...')
         data_exp.summarize_missing_data()
 
         eda_vis = EDA_Visualization(df)
@@ -34,30 +39,39 @@ class DataProcessing:
         
         # DataCleansing Module
         data_cleansing = DataCleansing(df)
-
+        print('Removing Duplicates...')
         df = data_cleansing.remove_duplicates(df)
+        print('Summarizing Missing Data...')
         data_exp.summarize_missing_data(df)
 
+        print('Handling Missing Data...')
         df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh, fill_missing_method)
         data_exp.summarize_missing_data(df)
 
         if optional == True:
+            print('Generating Anomaly Report...')
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
-            for i in range(1,len(df.columns)):
-                data_cleansing.detect_outliers(df, col_name=df.columns[i], threshold=3)
-
+            print('Detecting Outliers...')
+            for i in range(1,len(df.select_dtypes(include=['number']).columns)):
+                data_cleansing.detect_outliers(df.select_dtypes(include=['number']), col_name=df.select_dtypes(include=['number']).columns[i], threshold=3)
+       
         # Encoding & Scaling
         dp = DataPreprocessing(df, [self.target_list])
+        print('Encoding Features...')
         df = dp.feature_encoding()
-        
         if optional == True: 
             df = dp.feature_scaling(df)
         if resample == True:
             df = dp.data_resampling(df, timescale)
-
+        
+        dtypes = df.dtypes.to_dict()
+        for col_name, typ in dtypes.items():
+            if typ == 'datetime64[ns]': 
+                df = df.set_index(f'{col_name}')
         # Analysis 
         if optional == True:
             da = DataAnalysis(df,self.target)
+            print('Analyzing Data...')
             da.correlation_analysis()
             da.variance_analysis()
 
@@ -65,15 +79,19 @@ class DataProcessing:
         # should we make this a seperate df and then concat after feature selection?
         fe = FeatureEngineering(df)
         if engineering == 'time_lag':
+            print('Adding Features...')
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
         if engineering == 'gain':
+            print('Adding Features...')
             df = fe.transform_gain(df)
         if engineering == 'both':
+            print('Adding Features...')
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
             df = fe.transform_gain(df)
 
         # Feature Selection
         fs = FeatureSelection(df, self.target)
+        print('Selecting Features...')
         num_features = len(df)
         if num_features > 20:
             if num_features < 50:

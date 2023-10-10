@@ -106,14 +106,14 @@ class FeatureSelection:
         # Initialize Boruta-Shap feature selection method
         feature_selection_model = XGBRegressor(random_state=123) 
         Feature_Selector = BorutaShap(model=feature_selection_model, 
-            importance_measure='shap', 
+            importance_measure='shap',  
             classification=False)
         X = self.data.drop(self.target_name,axis=1)
 
         # Fit the Boruta-Shap feature selection model, and get all relevant features
         Feature_Selector.fit(X=X, y=self.data[self.target_name], n_trials=100, sample=False, 
                             train_or_test = 'train', normalize=False, 
-                            verbose=True, random_state=123)
+                            verbose=True,random_state=123)
 
         # Get the selected features
         selected_feats = list()
