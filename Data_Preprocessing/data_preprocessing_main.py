@@ -95,6 +95,8 @@ class TargetEncoding():
         encoder = TargetEncoder()
         encoder.fit(X_train[categorical_cols], y_train)
 
+        joblib.dump(encoder, 'temp_save/target_encoder.gz')
+
         X_train[categorical_cols] = encoder.transform(X_train[categorical_cols])
         X_val[categorical_cols] = encoder.transform(X_val[categorical_cols])
         X_test[categorical_cols] = encoder.transform(X_test[categorical_cols])
@@ -157,6 +159,8 @@ class OrdinalEncoding():
         X_train, X_val, X_test, y_train, y_val, y_test = data_preprocessing.data_splitting(self.data, self.target_list)
 
         encoder.fit(X_train[col_list], y_train)
+        joblib.dump(encoder, 'temp_save/ordinal_encoder.gz')
+
         X_train[col_list] = encoder.transform(X_train[col_list])
         X_val[col_list] = encoder.transform(X_val[col_list])
         X_test[col_list] = encoder.transform(X_test[col_list])
@@ -217,6 +221,8 @@ class FeatureScaling():
             raise ValueError("Invalid method! Choose from: minmax, standard")
 
         scaler.fit(X_train[numerical_columns])
+        joblib.dump(scaler, f'temp_save/{method}_scaler.gz')
+
         X_train[numerical_columns] = scaler.transform(X_train[numerical_columns])
         X_val[numerical_columns] = scaler.transform(X_val[numerical_columns])
         X_test[numerical_columns] = scaler.transform(X_test[numerical_columns])
