@@ -8,6 +8,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Data_Visualization.eda import EDA_Visualization
 from Data_Cleansing.anomaly_detection import AnomalyDetection
+import json
 
 
 # Strategy Pattern using ABC
@@ -156,6 +157,10 @@ class DataCleansing:
         else:
             thresh_list = [manual_shutdown_thresh] * len(data.columns)
 
+        # save the threshold to a json file
+        with open('temp_save/shutdown_thresh.json', 'w') as f:
+            json.dump(thresh_list, f)
+
         # get the % of shutdown period for each column
         shutdown_percent = data[data <= thresh_list].count() / data.shape[0]
         # get the columns that have shutdown period more than the threshold
@@ -204,6 +209,10 @@ class DataCleansing:
             return
 
         z_scores = np.abs(stats.zscore(data[col_name]))
+        # save the threshold to a json file
+        with open('temp_save/z_scores.json', 'w') as f:
+            json.dump(z_scores, f)
+        
         outliers_index_list = np.where(z_scores > threshold)
         print("%d outliers detected" % len(outliers_index_list[0]))
 

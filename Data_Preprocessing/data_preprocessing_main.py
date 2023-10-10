@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from category_encoders import TargetEncoder
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler, MinMaxScaler
+import joblib
 from box import Box
 with open('./config.yaml') as f:
     cfg = Box.from_yaml(f.read())
@@ -93,6 +94,7 @@ class TargetEncoding():
 
         encoder = TargetEncoder()
         encoder.fit(X_train[categorical_cols], y_train)
+
         X_train[categorical_cols] = encoder.transform(X_train[categorical_cols])
         X_val[categorical_cols] = encoder.transform(X_val[categorical_cols])
         X_test[categorical_cols] = encoder.transform(X_test[categorical_cols])
