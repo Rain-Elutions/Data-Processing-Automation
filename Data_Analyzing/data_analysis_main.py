@@ -10,7 +10,7 @@ class DataAnalysis:
         self.data = data
         self.target_name = target_name
 
-    def correlation_analysis(self,thresh:float = 0):
+    def correlation_analysis(self, thresh: float = 0):
         '''
         Calculate the correlations of each column for linear and non linear relations
 

@@ -53,7 +53,7 @@ def fill_method_factory(method="forward"):
     filler = {
         "mean": FillMissingByMean(),
         "median": FillMissingByMedian(),
-        "model": FillMissingByMode(),
+        "mode": FillMissingByMode(),
         "forward": FillMissingByLastKnownValue(),
         "back": FillMissingByNextKnownValue(),
         "notfill": NotFill()

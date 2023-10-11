@@ -18,3 +18,23 @@ data_split:
         random_state: 42
         shuffle: False
         stratify: null
+
+pipeline_options:
+    parse_dates: True
+    time_scale: 'h' # 'h'/'d'/'w'/'m'
+    anomaly: False
+    outliers: False
+    scaling: False
+    missing_Values:
+        drop_threshold: 0.5
+        fill_method: "forward" # mean/median/mode/forward/back/notfill
+    feature_engineering: 
+        time_lag: False
+        time_features: False
+        gain: False
+    feature_selection:
+        do: False
+        method: # dummy_feat_imp/borutashap/correlation
+        select_num: 
+        iter_num: 20
+        threshold: 0.5

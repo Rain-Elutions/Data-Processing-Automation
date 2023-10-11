@@ -19,17 +19,16 @@ class DataProcessing:
         self.target_list = target_list
         self.problem_type = problem_type
 
-    def pipeline(self, optional: bool = None, parse: bool = True, index = 0, drop_thresh: float = 0.5, fill_missing_method: str = 'mean', resample: bool = None, 
-                 timescale: str = 'h', engineering: str = None, feature_selector: str = 'boruta'):
-        #Data Exploration
+    def pipeline(self):
+        # Data Exploration
         print('Loading Data...')
         data_exp = DataExploration()
-        df = data_exp.load_data(self.data_source, parse_dates = parse, index_col = index)
+        df = data_exp.load_data(self.data_source, parse_dates = cfg.pipeline_options.parse_dates, index_col = 0)
 
         print('Getting Size...')
         data_exp.get_data_size()
-        for i in range(len(df.columns)):
-            data_exp.get_data_type(df,df.columns[i])
+        # for i in range(len(df.columns)):
+        #     data_exp.get_data_type(df,df.columns[i])
 
         print('Summarizing Type...')
         data_exp.summarize_data_type()
@@ -45,17 +44,16 @@ class DataProcessing:
         print('Removing Duplicates...')
         df = data_cleansing.remove_duplicates(df)
 
-        print('Summarizing Missing Data...')
-        data_exp.summarize_missing_data(df)
-
         print('Handling Missing Data...')
-        df = data_cleansing.handle_missing_values(df, self.target_list, drop_thresh, fill_missing_method)
+        df = data_cleansing.handle_missing_values(df, self.target_list, 
+                                                  cfg.pipeline_options.missing_Values.drop_threshold, 
+                                                  cfg.pipeline_options.missing_Values.fill_method)
         data_exp.summarize_missing_data(df)
 
-        if optional == True:
+        if cfg.pipeline_options.anomaly == True:
             print('Generating Anomaly Report...')
             data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
-
+        if cfg.pipeline_options.outliers == True:
             print('Detecting Outliers...')
             for i in range(1,len(df.select_dtypes(include=['number']).columns)):
                 data_cleansing.detect_outliers(df.select_dtypes(include=['number']), col_name=df.select_dtypes(include=['number']).columns[i], threshold=3)
@@ -64,54 +62,58 @@ class DataProcessing:
         dp = DataPreprocessing(df, [self.target_list])
         print('Encoding Features...')
         df = dp.feature_encoding()
-        if optional == True: 
+        if cfg.pipeline_options.scaling == True: 
             df = dp.feature_scaling(df)
-        if resample == True:
-            df = dp.data_resampling(df, timescale)
+
+        df = dp.data_resampling(df, cfg.pipeline_options.time_scale)
         
-        dtypes = df.dtypes.to_dict()
-        for col_name, typ in dtypes.items():
-            if typ == 'datetime64[ns]': 
-                df = df.set_index(f'{col_name}')
+        # keep this?
+        # dtypes = df.dtypes.to_dict()
+        # for col_name, typ in dtypes.items():
+        #     if typ == 'datetime64[ns]': 
+        #         df = df.set_index(f'{col_name}')
+
         # Analysis 
-        if optional == True:
-            da = DataAnalysis(df,self.target)
-            print('Analyzing Data...')
-            da.correlation_analysis()
+        da = DataAnalysis(df,self.target)
+        print('Analyzing Data...')
+        # add condtion?
+        if True:
+            da.correlation_analysis() # too messy
+        if df.shape[1] <= 60:
             da.variance_analysis()
+
+        # Feature Selection
+        if cfg.pipeline_options.feature_selection.do == True:
+            fs = FeatureSelection(df, self.target)
+            print('Selecting Features...')
+            if cfg.pipeline_options.feature_selection.method == 'dummy':
+                selected_tags, df = fs.dummy_feature_importance(
+                    select_num = cfg.pipeline_options.feature_selection.select_num,
+                    iter = cfg.pipeline_options.feature_selection.iter_num
+                )
+            if cfg.pipeline_options.feature_selection.method == 'boruta':
+                selected_tags, df = fs.borutashap_feature_selection(
+                    iter = cfg.pipeline_options.feature_selection.iter_num
+                )
+            if cfg.pipeline_options.feature_selection.method == 'correlation':
+                selected_tags, df = fs.correlation_selection(
+                    threshold = cfg.pipeline_options.feature_selection.threshold
+                )
+            print("selected features: ", selected_tags)
 
         # Feature Engineering (should this go after selection?)
         # should we make this a seperate df and then concat after feature selection?
         fe = FeatureEngineering(df)
-        if engineering == 'time_lag':
-            print('Adding Features...')
+        if cfg.pipeline_options.feature_selection.time_lag == True:
+            print('Adding Time Lag Features...')
             df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
-        if engineering == 'gain':
-            print('Adding Features...')
-            df = fe.transform_gain(df)
-        if engineering == 'both':
-            print('Adding Features...')
-            df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
+        if cfg.pipeline_options.feature_selection.time_features == True:
+            print('Adding Time Features...')
+            df = fe.add_time_features(df)
+        if cfg.pipeline_options.feature_selection.gain == True:
+            print('Transform the data into gain...')
             df = fe.transform_gain(df)
 
-        # Feature Selection
-        fs = FeatureSelection(df, self.target)
-        print('Selecting Features...')
-        num_features = len(df)
-        if num_features > 20:
-            if num_features < 50:
-                optional = True
-            if optional == True:
-                if feature_selector == 'dummy':
-                    selected_tags, df = fs.dummy_feature_importance()
-                    print(selected_tags)
-                if feature_selector == 'boruta':
-                    selected_tags, df = fs.borutashap_feature_selection()
-                    print(selected_tags)
-                if feature_selector == 'correlation':
-                    selected_tags, df = fs.correlation_selection()
-                    print(selected_tags)
-        else:
-            print('Too few features for selection')
+
 
         return df

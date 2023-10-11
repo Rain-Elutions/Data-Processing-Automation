@@ -94,7 +94,7 @@ class FeatureSelection:
 
         return selected_feats, self.data[selected_feats]
     
-    def borutashap_feature_selection(self) -> tuple[list[str], pd.DataFrame]:
+    def borutashap_feature_selection(self, iter: int = 20) -> tuple[list[str], pd.DataFrame]:
         '''
         Feature selection based on Boruta-Shap
 
@@ -111,7 +111,7 @@ class FeatureSelection:
         X = self.data.drop(self.target_name,axis=1)
 
         # Fit the Boruta-Shap feature selection model, and get all relevant features
-        Feature_Selector.fit(X=X, y=self.data[self.target_name], n_trials=100, sample=False, 
+        Feature_Selector.fit(X=X, y=self.data[self.target_name], n_trials=iter, sample=False, 
                             train_or_test = 'train', normalize=False, 
                             verbose=True,random_state=123)
 
