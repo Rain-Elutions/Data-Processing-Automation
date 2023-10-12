@@ -72,7 +72,7 @@ class DataProcessing:
         # Analysis 
         da = DataAnalysis(df,self.target)
         print('Analyzing Data...')
-        # add condtion?
+        
         if True:
             da.correlation_analysis() # too messy
         if df.shape[1] <= 60:
