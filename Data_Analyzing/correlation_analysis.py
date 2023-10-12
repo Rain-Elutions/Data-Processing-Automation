@@ -23,7 +23,7 @@ class CorrelationTypes:
          #creating the correlations
          fullcorr = df.corr()
          augcorr = fullcorr.dropna(how='all').dropna(axis=1,how='all') # drop rows/columns where all correlations are NA
-         return fullcorr,augcorr
+         return augcorr
     
     def calculate_MI(self,df: pd.DataFrame) -> pd.Series:
             '''
@@ -45,7 +45,7 @@ class CorrelationTypes:
             mi_matrixfull =  pd.DataFrame(mi_values, columns=df.columns, index=df.columns)
             mi_matrixaug = mi_matrixfull.dropna(how='all').dropna(axis=1,how='all')# drop rows/columns where all correlations are NA
      
-            return mi_matrixfull, mi_matrixaug
+            return mi_matrixaug
     
     def non_linear(self):
          '''
@@ -60,9 +60,9 @@ class CorrelationTypes:
 
          # Calculate mutual information matrix
          df = self.df[numeric_columns].dropna(axis=1,how='all')
-         mi_matrixfull,mi_matrixaug = self.calculate_MI(df)
+         mi_matrixaug = self.calculate_MI(df)
          
-         return  mi_matrixfull,mi_matrixaug,spearmancorr
+         return  mi_matrixaug,spearmancorr
 
     def top_correlations(self):
             '''

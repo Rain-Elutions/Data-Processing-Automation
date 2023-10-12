@@ -54,8 +54,9 @@ def heatMap(data,settitle:str=''):
                     )
         fig.update_layout(
                 title = settitle,
-                title_x=0.5
+                title_x=0.5,
         )
+        fig.update_scenes(aspectmode='data')
         fig.show()
         return
 

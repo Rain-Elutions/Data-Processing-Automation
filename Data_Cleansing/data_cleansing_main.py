@@ -80,7 +80,6 @@ class DataCleansing:
         data = data if data is not None else self.data
         # drop duplicate rows
         data = data.drop_duplicates()
-        data = data.reset_index(drop=False)
 
         # drop columns with all values be the same
         # duplicate_columns = data.columns[data.T.duplicated(keep='first')]
@@ -210,7 +209,7 @@ class DataCleansing:
             return
 
         z_scores = np.abs(stats.zscore(data[col_name]))
-        z_scores_dict = z_scores.to_dict()
+        z_scores_dict = [{"index": i, "z_score": z} for i, z in enumerate(z_scores)]
         # save the threshold to a json file
         with open('./temp_save/z_scores.json', 'w') as f:
             json.dump(z_scores_dict, f)
