@@ -74,7 +74,7 @@ class DataProcessing:
         print('Analyzing Data...')
         
         if True:
-            da.correlation_analysis() # too messy
+            da.correlation_analysis() 
         if df.shape[1] <= 60:
             da.variance_analysis()
 
@@ -110,7 +110,5 @@ class DataProcessing:
         if cfg.pipeline_options.feature_engineering.gain == True:
             print('Transform the data into gain...')
             df = fe.transform_gain(df)
-
-
 
         return df
