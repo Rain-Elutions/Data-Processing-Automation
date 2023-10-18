@@ -9,7 +9,7 @@ class DataExploration:
     def __init__(self):
         self.data = None
     
-    def load_data(self, file_path, parse_dates=True, index_col=0) -> pd.DataFrame:
+    def load_data(self, file_path, parse_dates=True, custom_index = True, index_col=0) -> pd.DataFrame:
         """
         Load data into memory
         
@@ -21,19 +21,32 @@ class DataExploration:
         Returns:
         - self.data: the raw data
         """
-        
-        try:
-            if file_path.endswith('.csv'):
-                self.data = pd.read_csv(file_path, parse_dates=parse_dates, index_col=index_col)
-            elif file_path.endswith('.xlsx'):
-                self.data = pd.read_excel(file_path, parse_dates=parse_dates, index_col=index_col)
-            elif file_path.endswith('.pickle'):
-                self.data = pd.read_pickle(file_path)
-                self.data = self.data.set_index(self.data.columns[0])
-                if parse_dates:
-                    self.data.index = pd.to_datetime(self.data.index)
-        except FileNotFoundError:
-            print("File not found")
+        if custom_index == True:
+            try:
+                if file_path.endswith('.csv'):
+                    self.data = pd.read_csv(file_path, parse_dates=parse_dates, index_col=index_col)
+                elif file_path.endswith('.xlsx'):
+                    self.data = pd.read_excel(file_path, parse_dates=parse_dates, index_col=index_col)
+                elif file_path.endswith('.pickle'):
+                    self.data = pd.read_pickle(file_path)
+                    self.data = self.data.set_index(self.data.columns[0])
+                    if parse_dates:
+                        self.data.index = pd.to_datetime(self.data.index)
+            except FileNotFoundError:
+                print("File not found")
+        else:
+             try:
+                if file_path.endswith('.csv'):
+                    self.data = pd.read_csv(file_path, parse_dates=parse_dates)
+                elif file_path.endswith('.xlsx'):
+                    self.data = pd.read_excel(file_path, parse_dates=parse_dates)
+                elif file_path.endswith('.pickle'):
+                    self.data = pd.read_pickle(file_path)
+                    self.data = self.data.set_index(self.data.columns[0])
+                    if parse_dates:
+                        self.data.index = pd.to_datetime(self.data.index)
+             except FileNotFoundError:
+                print("File not found")
 
         return self.data
     

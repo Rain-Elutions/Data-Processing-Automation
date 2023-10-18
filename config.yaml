@@ -21,13 +21,16 @@ data_split:
 
 pipeline_options:
     parse_dates: True
+    custom_index: False
+    index_col: 0
     time_scale: 'h' # 'h'/'d'/'w'/'m'
     anomaly: False
     outliers: False
     scaling: False
+    resample: False
     missing_Values:
         drop_threshold: 0.5
-        fill_method: "forward" # mean/median/mode/forward/back/notfill
+        fill_method: "notfill" # mean/median/mode/forward/back/notfill
     feature_engineering: 
         time_lag: False
         time_features: False

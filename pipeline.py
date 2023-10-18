@@ -23,7 +23,7 @@ class DataProcessing:
         # Data Exploration
         print('Loading Data...')
         data_exp = DataExploration()
-        df = data_exp.load_data(self.data_source, parse_dates = cfg.pipeline_options.parse_dates, index_col = 0)
+        df = data_exp.load_data(self.data_source, parse_dates = cfg.pipeline_options.parse_dates,custom_index = cfg.pipeline_options.custom_index, index_col = cfg.pipeline_options.index_col)
         print('Getting Size...')
 
         data_exp.get_data_size()
@@ -66,8 +66,8 @@ class DataProcessing:
         if cfg.pipeline_options.scaling == True: 
             print('Scaling Features...')
             df = dp.feature_scaling(df)
-
-        df = dp.data_resampling(df, cfg.pipeline_options.time_scale)
+        if cfg.pipeline_options.resample == True:
+            df = dp.data_resampling(df, cfg.pipeline_options.time_scale)
         
         # Analysis 
         da = DataAnalysis(df,self.target)
@@ -91,7 +91,7 @@ class DataProcessing:
             if cfg.pipeline_options.feature_selection.method == 'boruta':
                 selected_tags, df = fs.borutashap_feature_selection(
                     iter = cfg.pipeline_options.feature_selection.iter_num
-                )
+                    )
                 print("selected features: ", selected_tags)
             if cfg.pipeline_options.feature_selection.method == 'correlation':
                 selected_tags, df = fs.correlation_selection(
