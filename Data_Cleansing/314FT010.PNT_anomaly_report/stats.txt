@@ -1,0 +1,6 @@
+Date Range: 2020-01-01 00:00:00 - 2020-01-05 03:00:00
+Total number of instances observed by Maestro: 100
+Total number of operational tags: 1894
+Number of important tags: 294
+Total number of sub-optimal (314FT010.PNT greater than 9325.83290608724) instances: 3
+Total number of optimal (314FT010.PNT not greater than 9325.83290608724) instances: 97

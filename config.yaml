@@ -22,9 +22,9 @@ data_split:
 pipeline_options:
     parse_dates: True
     time_scale: 'h' # 'h'/'d'/'w'/'m'
-    anomaly: True
+    anomaly: False
     outliers: True
-    scaling: False
+    scaling: True
     missing_Values:
         drop_threshold: 0.5
         fill_method: "forward" # mean/median/mode/forward/back/notfill
