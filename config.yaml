@@ -23,8 +23,8 @@ pipeline_options:
     parse_dates: True
     time_scale: 'h' # 'h'/'d'/'w'/'m'
     anomaly: False
-    outliers: True
-    scaling: True
+    outliers: False
+    scaling: False
     missing_Values:
         drop_threshold: 0.5
         fill_method: "forward" # mean/median/mode/forward/back/notfill
@@ -34,7 +34,7 @@ pipeline_options:
         gain: False
     feature_selection:
         do: True
-        method: # dummy_feat_imp/borutashap/correlation
+        method: boruta # dummy_feat_imp/borutashap/correlation
         select_num: 
         iter_num: 20
         threshold: 0.5

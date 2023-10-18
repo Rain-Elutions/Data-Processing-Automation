@@ -73,7 +73,7 @@ class DataProcessing:
         da = DataAnalysis(df,self.target)
         print('Analyzing Data...')
         
-        if True:
+        if df.shape[1] <= 250:
             da.correlation_analysis() 
         if df.shape[1] <= 60:
             da.variance_analysis()
