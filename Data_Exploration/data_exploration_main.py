@@ -9,7 +9,7 @@ class DataExploration:
     def __init__(self):
         self.data = None
     
-    def load_data(self, file_path, parse_dates=True, custom_index = True, index_col=0) -> pd.DataFrame:
+    def load_data(self, file_path, parse_dates=True, date_index = True, index_col=0) -> pd.DataFrame:
         """
         Load data into memory
         
@@ -21,7 +21,7 @@ class DataExploration:
         Returns:
         - self.data: the raw data
         """
-        if custom_index == True:
+        if date_index == True:
             try:
                 if file_path.endswith('.csv'):
                     self.data = pd.read_csv(file_path, parse_dates=parse_dates, index_col=index_col)
