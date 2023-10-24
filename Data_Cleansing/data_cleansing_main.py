@@ -225,7 +225,7 @@ class DataCleansing:
             # print("Upper bound: %.2f" % upper_bound)
         
             eda_vis = EDA_Visualization()
-            if len(outliers_index_list[0]) > 3:
+            if len(outliers_index_list[0]) > 1000:
                 eda_vis.visualize_outliers(data, col_name, outliers_index_list)
 
         return

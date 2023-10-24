@@ -23,7 +23,7 @@ class DataProcessing:
         # Data Exploration
         print('Loading Data...')
         data_exp = DataExploration()
-        df = data_exp.load_data(self.data_source, parse_dates = cfg.pipeline_options.parse_dates,date_index = cfg.pipeline_options.custom_index, index_col = cfg.pipeline_options.index_col)
+        df = data_exp.load_data(self.data_source, parse_dates = cfg.pipeline_options.parse_dates,date_index = cfg.pipeline_options.date_index, index_col = cfg.pipeline_options.index_col)
         print('Getting Size...')
 
         data_exp.get_data_size()

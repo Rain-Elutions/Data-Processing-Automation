@@ -29,8 +29,8 @@ class DataAnalysis:
         # creating heatmaps
         heatMap(corrplot.iloc[:,:10],'Correlation')
         heatMap(spearman.iloc[:,:10],'Spearman Correlation')
-        heatMap(MIaug.iloc[:,:10],'Mutual Information')
-        
+        if MIaug != None:
+            heatMap(MIaug.iloc[:,:10],'Mutual Information')
         return 
 
     def variance_analysis(self, data: pd.DataFrame = None):

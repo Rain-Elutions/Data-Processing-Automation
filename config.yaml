@@ -24,13 +24,13 @@ pipeline_options:
     date_index: True
     index_col: 0
     time_scale: 'h' # 'h'/'d'/'w'/'m'
-    anomaly: True
-    outliers: True
+    anomaly: False
+    outliers: False
     scaling: True
     resample: True
     missing_Values:
         drop_threshold: 0.5
-        fill_method: "notfill" # mean/median/mode/forward/back/notfill
+        fill_method: "mean" # mean/median/mode/forward/back/notfill
     feature_engineering: 
         time_lag: False
         time_features: False

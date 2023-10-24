@@ -110,8 +110,14 @@ class FeatureSelection:
                 classification=False)
             df = self.data.select_dtypes(include='number')
             X = df.drop(self.target_name,axis=1)
+            if X.isnull().values.any() == True:
+                X = X.fillna(X.mean())
+
+            Y = df[self.target_name]
+            if Y.isnull().values.any() == True:
+                Y = df[self.target_name].fillna(df[self.target_name].mean())
             # Fit the Boruta-Shap feature selection model, and get all relevant features
-            Feature_Selector.fit(X=X, y=df[self.target_name], n_trials=iter, sample=True, 
+            Feature_Selector.fit(X=X, y=Y, n_trials=iter, sample=True, 
                                 train_or_test = 'train', normalize=False, 
                                 verbose=True,random_state=123)
         else:

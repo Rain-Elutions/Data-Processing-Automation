@@ -1,0 +1,6 @@
+Date Range: 2020-12-01 00:00:00 - 2022-09-18 22:30:00
+Total number of instances observed by Maestro: 28886
+Total number of operational tags: 82
+Number of important tags: 44
+Total number of sub-optimal (ALC-6LI-404 Augusta greater than 42.52634390195209) instances: 2186
+Total number of optimal (ALC-6LI-404 Augusta not greater than 42.52634390195209) instances: 26700
