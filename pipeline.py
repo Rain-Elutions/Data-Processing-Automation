@@ -13,11 +13,9 @@ from Data_Analyzing.feature_selection import FeatureSelection
 from Data_Visualization.eda import EDA_Visualization
 
 class DataProcessing:
-    def __init__(self, data_source: str = None, target: str = None, target_list: list = None, problem_type: str = None):
+    def __init__(self, data_source: str = None, target: str = None):
         self.data_source = data_source
         self.target = target
-        self.target_list = target_list
-        self.problem_type = problem_type
 
     def pipeline(self):
         # Data Exploration
@@ -44,7 +42,7 @@ class DataProcessing:
         df = data_cleansing.remove_duplicates(df)
         print('Handling Missing Data...')
 
-        df = data_cleansing.handle_missing_values(df, self.target_list, 
+        df = data_cleansing.handle_missing_values(df, self.target, 
                                                   cfg.pipeline_options.missing_Values.drop_threshold, 
                                                   cfg.pipeline_options.missing_Values.fill_method)
       
@@ -52,14 +50,14 @@ class DataProcessing:
      
         if cfg.pipeline_options.anomaly == True:
             print('Generating Anomaly Report...')
-            data_cleansing.generate_anomaly_report(df, self.target, self.problem_type)
+            data_cleansing.generate_anomaly_report(df, self.target, cfg.pipeline_options.problem_type)
         if cfg.pipeline_options.outliers == True:
             print('Detecting Outliers...')
             for i in range(1,len(df.select_dtypes(include=['number']).columns)):
                 data_cleansing.detect_outliers(df.select_dtypes(include=['number']), col_name=df.select_dtypes(include=['number']).columns[i], threshold=3)
  
         # Encoding & Scaling
-        dp = DataPreprocessing(df, [self.target_list])
+        dp = DataPreprocessing(df, [self.target])
         print('Encoding Features...')
         df = dp.feature_encoding()
       
@@ -103,7 +101,7 @@ class DataProcessing:
         fe = FeatureEngineering(df)
         if cfg.pipeline_options.feature_engineering.time_lag == True:
             print('Adding Time Lag Features...')
-            df = fe.add_time_lag_features(df, col_list=[self.target_list], max_lag=1)
+            df = fe.add_time_lag_features(df, col_list=[self.target], max_lag=1)
         if cfg.pipeline_options.feature_engineering.time_features == True:
             print('Adding Time Features...')
             df = fe.add_time_features(df)

@@ -20,6 +20,7 @@ data_split:
         stratify: null
 
 pipeline_options:
+    problem_type: 'max' #max/min/both
     parse_dates: True
     date_index: True
     index_col: 0
