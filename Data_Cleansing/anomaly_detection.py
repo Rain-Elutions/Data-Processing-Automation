@@ -93,6 +93,8 @@ class AnomalyDetection:
                     upper = quartiles[0.75] + (1.5*iqr)
                 else:
                     print('Invalid problem type')
+                    lower = 0 
+                    upper = 0 
             else:
                 custom_quartile = self.df[self.target_name].quantile(self.manual_thresh)
                 if self.problem_type == 'max':
@@ -106,6 +108,8 @@ class AnomalyDetection:
                         lower = 0 
                 else:
                     print('Invalid problem type')
+                    lower = 0 
+                    upper = 0 
 
             print('Found Bounds!')
 

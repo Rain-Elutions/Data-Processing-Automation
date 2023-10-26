@@ -29,7 +29,7 @@ class DataAnalysis:
         # creating heatmaps
         heatMap(corrplot.iloc[:,:10],'Correlation')
         heatMap(spearman.iloc[:,:10],'Spearman Correlation')
-        if MIaug != None:
+        if isinstance(MIaug,pd.DataFrame):
             heatMap(MIaug.iloc[:,:10],'Mutual Information')
         return 
 

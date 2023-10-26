@@ -211,6 +211,8 @@ class DataCleansing:
         z_scores = np.abs(stats.zscore(data[col_name]))
         z_scores_dict = [{"index": i, "z_score": z} for i, z in enumerate(z_scores)]
         # save the threshold to a json file
+        if not os.path.exists('./temp_save'):
+            os.makedirs('./temp_save')
         with open('./temp_save/z_scores.json', 'w') as f:
             json.dump(z_scores_dict, f)
         
