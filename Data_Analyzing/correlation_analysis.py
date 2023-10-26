@@ -60,8 +60,10 @@ class CorrelationTypes:
 
          # Calculate mutual information matrix
          df = self.df[numeric_columns].dropna(axis=1,how='all')
-         mi_matrixaug = self.calculate_MI(df)
-         
+         if df.isnull().values.any() == False:
+            mi_matrixaug = self.calculate_MI(df)
+         else:
+              mi_matrixaug = None
          return  mi_matrixaug,spearmancorr
 
     def top_correlations(self):

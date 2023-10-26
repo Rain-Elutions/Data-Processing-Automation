@@ -1,6 +1,6 @@
-Date Range: 0 - 975
-Total number of instances observed by Maestro: 976
+Date Range: 0 - 999
+Total number of instances observed by Maestro: 982
 Total number of operational tags: 98
 Number of important tags: 3
-Total number of sub-optimal (TotalCostUSD greater than -1992.4874999999997) instances: 0
-Total number of optimal (TotalCostUSD not greater than -1992.4874999999997) instances: 976
+Total number of sub-optimal (TotalCostUSD greater than -1981.9249999999997) instances: 0
+Total number of optimal (TotalCostUSD not greater than -1981.9249999999997) instances: 982
