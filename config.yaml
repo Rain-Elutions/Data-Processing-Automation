@@ -25,6 +25,7 @@ pipeline_options:
     anomaly: True
     outliers: True
     scaling: False
+    vis_max_cols: 60
     missing_Values:
         drop_threshold: 0.5
         fill_method: "forward" # mean/median/mode/forward/back/notfill

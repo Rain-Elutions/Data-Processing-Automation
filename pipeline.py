@@ -12,6 +12,7 @@ from Data_Analyzing.data_analysis_main import DataAnalysis
 from Data_Analyzing.feature_selection import FeatureSelection
 from Data_Visualization.eda import EDA_Visualization
 
+
 class DataProcessing:
     def __init__(self, data_source: str = None, target: str = None, target_list: list = None, problem_type: str = None):
         self.data_source = data_source
@@ -75,7 +76,7 @@ class DataProcessing:
         
         if True:
             da.correlation_analysis() 
-        if df.shape[1] <= 60:
+        if df.shape[1] <= cfg.pipeline_options.vis_max_cols:
             da.variance_analysis()
 
         # Feature Selection
