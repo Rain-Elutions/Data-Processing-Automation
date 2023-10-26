@@ -92,9 +92,8 @@ class AnomalyDetection:
                         lower = 0 
                     upper = quartiles[0.75] + (1.5*iqr)
                 else:
+                    raise Exception('Invalid Pproblem Type')
                     print('Invalid problem type')
-                    lower = 0 
-                    upper = 0 
             else:
                 custom_quartile = self.df[self.target_name].quantile(self.manual_thresh)
                 if self.problem_type == 'max':
@@ -107,9 +106,8 @@ class AnomalyDetection:
                     if lower < 0:
                         lower = 0 
                 else:
-                    print('Invalid problem type')
-                    lower = 0 
-                    upper = 0 
+                    raise Exception('Invalid Pproblem Type')
+        
 
             print('Found Bounds!')
 
@@ -156,7 +154,7 @@ class AnomalyDetection:
             elif self.problem_type == 'both':
                 df['Anomaly'] = np.where(np.logical_and(np.greater_equal(self.df[self.target_name],lower),np.less_equal(df[self.target_name],upper)), 1, 0)
             else:
-                print('ERROR: choose another filter type')
+                raise Exception('ERROR: choose another filter type')
 
             # splitting the data based on whether or not it is optimal or suboptimal
             optimal = df[df['Anomaly']== 0]
@@ -244,10 +242,10 @@ class AnomalyDetection:
                                 vis = BoxPlots(optimal, suboptimal, target_name, optimal.columns[0], optimal.columns[1])
                                 vis.double_boxplot()
                             else:
-                                print(f"Error: DateTime data detected in columns {i} and {i+1}. Please ensure numerical data is used.")
+                                raise Exception(f"Error: DateTime data detected in columns {i} and {i+1}. Please ensure numerical data is used.")
 
                 else:
-                    print("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
+                    raise Exception("Error: The DataFrames optimaloutputtop and/or suboptimaloutputtop are empty.")
                 
                 #creating correlation csvs
                 corr = CorrelationTypes(self.df.select_dtypes(include=['number']), topn, self.target_name)
