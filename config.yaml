@@ -23,10 +23,11 @@ pipeline_options:
     problem_type: 'max' #max/min/both
     parse_dates: True
     index_col: 0
+    scaling: True
+    resample : False
     time_scale: 'h' # 'h'/'d'/'w'/'m'
     anomaly: True
     outliers: True
-    scaling: False
     vis_max_cols: 60
     missing_Values:
         drop_threshold: 0.5
