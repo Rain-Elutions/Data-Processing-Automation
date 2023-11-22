@@ -40,12 +40,13 @@ class AnomalyDetection:
             0<x<1 threshold for determining anomalous 
             instances 
         """
-        def __init__(self, data, target_name: str = '', problem_type: str = 'max', manual_input=None, manual_thresh=None):
+        def __init__(self, data, target_name: str = '', problem_type: str = 'max',KPI_equation = None, manual_input=None, manual_thresh=None):
             self.df = data
             self.target_name = target_name
             self.problem_type = problem_type
             self.manual_input = manual_input
             self.manual_thresh = manual_thresh
+            self.KPI_equation = KPI_equation
 
         def __get_bound(self):
             '''
@@ -76,10 +77,10 @@ class AnomalyDetection:
                 quartiles = self.df[self.target_name].quantile([0.25, 0.75])
                 iqr = quartiles[0.75] - quartiles[0.25]
 
-                if self.problem_type == 'max':
+                if self.problem_type == 'max' or self.problem_type == 'max_equal':
                     lower = quartiles[0.25] - (1.5*iqr)
                     upper = max(self.df[self.target_name])   
-                elif self.problem_type == 'min':
+                elif self.problem_type == 'min' or self.problem_type == 'min_equal':
                     lower = min(self.df[self.target_name])
                     upper = quartiles[0.75] + (1.5*iqr)
                     # making sure there are no negative values
@@ -93,13 +94,12 @@ class AnomalyDetection:
                     upper = quartiles[0.75] + (1.5*iqr)
                 else:
                     raise Exception('Invalid Pproblem Type')
-                    print('Invalid problem type')
             else:
                 custom_quartile = self.df[self.target_name].quantile(self.manual_thresh)
-                if self.problem_type == 'max':
+                if self.problem_type == 'max' or self.problem_type == 'max_equal':
                     lower = custom_quartile
                     upper = max(self.df[self.target_name])   
-                elif self.problem_type == 'min':
+                elif self.problem_type == 'min' or self.problem_type == 'min_equal':
                     lower = min(self.df[self.target_name])
                     upper = custom_quartile
                     # making sure there are no negative values
@@ -147,9 +147,13 @@ class AnomalyDetection:
             df = self.df.copy()
 
             # finding the actual anomalies 
-            if self.problem_type == 'max':
+            if self.problem_type == 'max_equal':
                 df['Anomaly'] = np.where(np.greater_equal(self.df[self.target_name],lower), 0, 1)
+            elif self.problem_type == 'max':
+                df['Anomaly'] = np.where(np.greater(self.df[self.target_name],lower), 0, 1)
             elif self.problem_type == 'min':
+                df['Anomaly'] = np.where(np.less(self.df[self.target_name],upper), 0, 1)
+            elif self.problem_type == 'min_equal':
                 df['Anomaly'] = np.where(np.less_equal(self.df[self.target_name],upper), 0, 1)
             elif self.problem_type == 'both':
                 df['Anomaly'] = np.where(np.logical_and(np.greater_equal(self.df[self.target_name],lower),np.less_equal(df[self.target_name],upper)), 1, 0)
@@ -255,27 +259,55 @@ class AnomalyDetection:
                 # Making Basic Stats for IES
                 if self.problem_type == 'max':
                      threshtype = 'greater than '
-                     bound = str(lower)
+                     oppositeype = 'less than '
+                     bound = str(round(lower,2))
+                elif self.problem_type == 'max_equal':
+                     threshtype = 'greater than or equal to '
+                     oppositeype = 'less than '
+                     bound = str(round(lower,2))
                 elif self.problem_type == 'min':
-                     threshtype = 'less than '
-                     bound = str(upper)
+                     threshtype = ' less than '
+                     oppositeype = 'greater than'
+                     bound = str(round(upper,2))
+                elif self.problem_type == 'min_equal':
+                     threshtype = 'less than or equal to '
+                     oppositeype = 'greater than '
+                     bound = str(round(upper,2))
                 elif self.problem_type == 'both':
                      threshtype = 'between '
-                     bound = ''
+                     oppositeype = 'not between '
+                     bound = (str(round(lower,2)),str(round(upper,2)))
+                     bound = ' and '.join(bound)
                 else:
                      print('Invalid Threshold type')
-                with open('./Data_Cleansing/'+ new_directory_name +'/stats.txt', 'w') as f:
-                    f.write('Date Range: ' + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
-                    f.write('\n')
-                    f.write('Total number of instances observed by Maestro: ' + str(len(self.df)))
-                    f.write('\n')
-                    f.write('Total number of operational tags: ' + str(len(self.df.columns)))
-                    f.write('\n')
-                    f.write('Number of important tags: ' + str(len(topn)))
-                    f.write('\n')
-                    f.write('Total number of sub-optimal ('+ self.target_name +' '+ threshtype + bound + ') instances: ' + str(len(suboptimaloutput)))
-                    f.write('\n')
-                    f.write('Total number of optimal (' + self.target_name + ' not '+ threshtype + bound  + ') instances: ' + str(len(optimaloutput)))
+                if self.KPI_equation is None:
+                    with open('./Data_Cleansing/'+ new_directory_name +'/stats.txt', 'w') as f:
+                        f.write('Date Range: ' + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
+                        f.write('\n')
+                        f.write('Total number of instances observed by Maestro: ' + str(len(self.df)))
+                        f.write('\n')
+                        f.write('Total number of operational tags: ' + str(len(self.df.columns)))
+                        f.write('\n')
+                        f.write('Number of important tags: ' + str(len(topn)))
+                        f.write('\n')
+                        f.write('Total number of sub-optimal ('+ self.target_name +' '+  oppositeype + bound + ') instances: ' + str(len(suboptimaloutput)))
+                        f.write('\n')
+                        f.write('Total number of optimal (' + self.target_name +' ' + threshtype + bound  + ') instances: ' + str(len(optimaloutput)))
+                else: 
+                    with open('./Data_Cleansing/'+ new_directory_name +'/stats.txt', 'w') as f:
+                        f.write("Maestro utilized KPI " + self.target_name + ' - ' + self.KPI_equation + " to determine if the process has been operating within range. The entire data set was broken down into hourly instances and then classified by Maestro as Optimal or Sub-Optimal to then perform optimization.")
+                        f.write('\n')
+                        f.write('Date Range: ' + str(min(self.df.index)) +' - '+ str(max(self.df.index)))
+                        f.write('\n')
+                        f.write('Total number of instances observed by Maestro: ' + str(len(self.df)))
+                        f.write('\n')
+                        f.write('Total number of operational tags: ' + str(len(self.df.columns)))
+                        f.write('\n')
+                        f.write('Number of important tags: ' + str(len(topn)))
+                        f.write('\n')
+                        f.write('Total number of sub-optimal ('+ self.target_name +' '+ oppositeype + bound + ') instances: ' + str(len(suboptimaloutput)))
+                        f.write('\n')
+                        f.write('Total number of optimal (' + self.target_name +' ' + threshtype + bound  + ') instances: ' + str(len(optimaloutput)))
 
                 print('Done')
         

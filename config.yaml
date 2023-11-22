@@ -20,13 +20,14 @@ data_split:
         stratify: null
 
 pipeline_options:
-    problem_type: 'max' #max/min/both
+    problem_type: 'max' #max/max_equal/min/min_equal/both
     parse_dates: True
     index_col: 0
     scaling: True
     resample : False
     time_scale: 'h' # 'h'/'d'/'w'/'m'
     anomaly: True
+    KPI: null #null,KPI equation string
     outliers: True
     vis_max_cols: 60
     missing_Values:

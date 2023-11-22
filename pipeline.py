@@ -51,7 +51,7 @@ class DataProcessing:
      
         if cfg.pipeline_options.anomaly == True:
             print('Generating Anomaly Report...')
-            data_cleansing.generate_anomaly_report(df, self.target, cfg.pipeline_options.problem_type)
+            data_cleansing.generate_anomaly_report(df, self.target, cfg.pipeline_options.problem_type,cfg.pipeline_options.KPI)
         if cfg.pipeline_options.outliers == True:
             print('Detecting Outliers...')
             for i in range(1,len(df.select_dtypes(include=['number']).columns)):

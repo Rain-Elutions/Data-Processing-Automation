@@ -170,7 +170,7 @@ class DataCleansing:
 
         return data
     
-    def generate_anomaly_report(self, data: pd.DataFrame = None, target_name : str = '', problem_type : str = 'max', manual_input=None, manual_thresh=None):
+    def generate_anomaly_report(self, data: pd.DataFrame = None, target_name : str = '', problem_type : str = 'max',KPI_equation = None, manual_input=None, manual_thresh=None):
         '''
         Generate anomaly report for the target variable in the input data
 
@@ -186,7 +186,7 @@ class DataCleansing:
         '''
 
         data = data if data is not None else self.data
-        anom_detect = AnomalyDetection(data, target_name, problem_type=problem_type, manual_input=manual_input, manual_thresh=manual_thresh)
+        anom_detect = AnomalyDetection(data, target_name, problem_type=problem_type, KPI_equation=KPI_equation,manual_input=manual_input, manual_thresh=manual_thresh)
         anom_detect.anomaly_report()
 
         return
