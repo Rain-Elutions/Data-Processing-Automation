@@ -25,27 +25,27 @@ class CorrelationTypes:
          augcorr = fullcorr.dropna(how='all').dropna(axis=1,how='all') # drop rows/columns where all correlations are NA
          return augcorr
     
-    def calculate_MI(self,df: pd.DataFrame) -> pd.Series:
-            '''
-            Calculate the mutual information of a df in order to determine nonlinear relations
+    # def calculate_MI(self,df: pd.DataFrame) -> pd.Series:
+    #         '''
+    #         Calculate the mutual information of a df in order to determine nonlinear relations
 
-            Parameters:
-            -data: the input Dataframe
-            '''
-            mi_values = []
-            for col1 in df.columns:
-                mi_row = []
-                for col2 in df.columns:
-                    v1 = np.array(df[col1])
-                    v2 = np.array(df[col2])
-                    mi = mutual_info_regression(v1.reshape(-1, 1), v2)[0]
-                    mi_row.append(mi)
+    #         Parameters:
+    #         -data: the input Dataframe
+    #         '''
+    #         mi_values = []
+    #         for col1 in df.columns:
+    #             mi_row = []
+    #             for col2 in df.columns:
+    #                 v1 = np.array(df[col1])
+    #                 v2 = np.array(df[col2])
+    #                 mi = mutual_info_regression(v1.reshape(-1, 1), v2)[0]
+    #                 mi_row.append(mi)
                 
-                mi_values.append(mi_row)
-            mi_matrixfull =  pd.DataFrame(mi_values, columns=df.columns, index=df.columns)
-            mi_matrixaug = mi_matrixfull.dropna(how='all').dropna(axis=1,how='all')# drop rows/columns where all correlations are NA
+    #             mi_values.append(mi_row)
+    #         mi_matrixfull =  pd.DataFrame(mi_values, columns=df.columns, index=df.columns)
+    #         mi_matrixaug = mi_matrixfull.dropna(how='all').dropna(axis=1,how='all')# drop rows/columns where all correlations are NA
      
-            return mi_matrixaug
+    #         return mi_matrixaug
     
     def non_linear(self):
          '''
