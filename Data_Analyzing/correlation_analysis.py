@@ -59,12 +59,12 @@ class CorrelationTypes:
          spearmancorr = self.df[numeric_columns].corr(method='spearman').dropna(how='all').dropna(axis=1,how='all')
 
          # Calculate mutual information matrix
-         df = self.df[numeric_columns].dropna(axis=1,how='all')
-         if df.isnull().values.any() == False:
-            mi_matrixaug = self.calculate_MI(df)
-         else:
-              mi_matrixaug = None
-         return  mi_matrixaug,spearmancorr
+        #  df = self.df[numeric_columns].dropna(axis=1,how='all')
+        #  if df.isnull().values.any() == False:
+        #     mi_matrixaug = self.calculate_MI(df)
+        #  else:
+        #       mi_matrixaug = None
+         return  spearmancorr
 
     def top_correlations(self):
             '''

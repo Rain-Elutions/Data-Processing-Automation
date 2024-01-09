@@ -24,14 +24,14 @@ class DataAnalysis:
         corrplot = p.get_correlations()
 
         # getting nonlinear correlations
-        MIaug,spearman = p.non_linear()
+        spearman = p.non_linear()
 
         # creating heatmaps
         heatMap(corrplot.iloc[:,:10],'Correlation')
         heatMap(spearman.iloc[:,:10],'Spearman Correlation')
-        if isinstance(MIaug,pd.DataFrame):
-            heatMap(MIaug.iloc[:,:10],'Mutual Information')
-        return 
+        # if isinstance(MIaug,pd.DataFrame):
+        #     heatMap(MIaug.iloc[:,:10],'Mutual Information')
+        # return 
 
     def variance_analysis(self, data: pd.DataFrame = None):
         '''
